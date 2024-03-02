@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import Contact from "./components/Contact";
 const page = () => {
   return (
-    <div className="py-10 ">
+    <div className="py-10 min-w-full">
       <div className="dark:bg-black bg-black  dark:bg-grid-white/[0.05] bg-grid-white/[0.03] relative">
         <div className="max-w-[1280px] mx-auto p-5">
           <HeroSection />

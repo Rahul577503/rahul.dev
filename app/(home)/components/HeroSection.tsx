@@ -3,9 +3,10 @@ import Image from "next/legacy/image";
 import Profile from "@/public/me.svg";
 import { MovingBorderButton } from "@/components/ui/moving-border";
 import Button from "./Button";
+
 const HeroSection = () => {
   return (
-    <div className="min-h-[60vh] py-20 px-5 flex flex-col-reverse lg:flex-row items-center justify-between gap-14 lg:gap-0 relative animate-move-up">
+    <div className="min-h-[60vh] py-20 px-5 flex flex-col-reverse lg:flex-row items-center justify-between min-w-full gap-14 lg:gap-0 relative animate-move-up">
       <div className="lg:w-1/2 space-y-10 text-center lg:text-left">
         <h1 className="text-3xl lg:text-7xl md:text-2xl font-bold text-white">
           <span className="inline-block ">Hii There !</span>{" "}

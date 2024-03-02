@@ -1,6 +1,17 @@
 /* eslint-disable react/jsx-key */
 import React from "react";
-import { SiCss3, SiCssmodules, SiHtml5, SiIcon, SiJavascript, SiMdx, SiMui, SiNextdotjs, SiReact, SiTailwindcss} from "react-icons/si";
+import {
+  SiCss3,
+  SiCssmodules,
+  SiHtml5,
+  SiIcon,
+  SiJavascript,
+  SiMdx,
+  SiMui,
+  SiNextdotjs,
+  SiReact,
+  SiTailwindcss,
+} from "react-icons/si";
 import Title from "./Title";
 import Link from "next/link";
 import { DirectionAwareHover } from "@/components/ui/direction-aware-hover";
@@ -19,7 +30,7 @@ const Project: React.FC = () => {
     {
       title: "Flight Reservation Desk",
       tech: [<SiReact />, <SiNextdotjs />, <SiTailwindcss />, <SiIcon />],
-      link: "flightsreservationdesk.com/",
+      link: "https://flightsreservationdesk.com/",
       cover: "/flight.svg",
       background: "bg-indigo-400",
     },
@@ -32,15 +43,27 @@ const Project: React.FC = () => {
     },
     {
       title: "Zoko World",
-      tech: [<SiReact />, <SiNextdotjs />, <SiCssmodules/>, <SiIcon />,<SiMui/>],
-      link: "zokoworld.vercel.appp",
+      tech: [
+        <SiReact />,
+        <SiNextdotjs />,
+        <SiCssmodules />,
+        <SiIcon />,
+        <SiMui />,
+      ],
+      link: "https://zokoworld.vercel.app/",
       cover: "/zworld.svg",
       background: "bg-amber-400",
     },
     {
       title: "NitinEducHub",
-      tech: [<SiReact />, <SiNextdotjs />, <SiTailwindcss />, <SiIcon />,<SiMdx/>],
-      link: "nitinmaurya.vercel.app",
+      tech: [
+        <SiReact />,
+        <SiNextdotjs />,
+        <SiTailwindcss />,
+        <SiIcon />,
+        <SiMdx />,
+      ],
+      link: "https://nitinmaurya.vercel.app/",
       cover: "/nitinmaurya.com.svg",
       background: "bg-indigo-400",
     },
@@ -61,7 +84,9 @@ const Project: React.FC = () => {
                 className="w-full space-y-5"
               >
                 <div className="space-y-5">
-                  <h1 className="text-xl md:text-2xl  font-bold">{project.title}</h1>
+                  <h1 className="text-xl md:text-2xl  font-bold">
+                    {project.title}
+                  </h1>
                   <div className="flex items-center space-x-2">
                     {project.tech.map((icon, index) => (
                       <span key={index} className="text-2xl">
