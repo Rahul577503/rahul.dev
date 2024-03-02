@@ -70,7 +70,7 @@ const Project: React.FC = () => {
   ];
 
   return (
-    <div className="py-10 p-5  sm:p-0 flex  flex-col justify-center items-center">
+    <div className="py-10 p-5 sm:p-0 flex  flex-col justify-center items-center">
       <Title
         text="Projects"
         className="flex flex-col items-center justify-center -rotate-6"
