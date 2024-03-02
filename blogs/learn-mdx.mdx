@@ -1,0 +1,156 @@
+---
+title: "Learn MDX"
+date: "2024-02-28"
+description: "MDX (Markdown + JSX)"
+image: "https://img.freepik.com/free-photo/flow-digital-information-data-channel_60438-4070.jpg?t=st=1709365171~exp=1709368771~hmac=a78423c4b7b7a5beadba08e4a8dee86d1d1e1b63de005cd44401bf4c40a0c52d&w=1800"
+---
+
+export const metadata = {
+  author: "Rahul Maurya",
+};
+
+![Docusaurus logo](/img/mdx.jpeg)
+
+# STYLIZE TEXT
+
+**TABLES**
+
+### Tables are a common extension of the official markdown definition (CommonMark). They can be formatted in quite a lot of ways:
+
+```md
+| _italic_       | **bold**    | strike­thr­ough | code in-line |
+| -------------- | ----------- | --------------- | ------------ |
+| Column Title   |             |                 |              |
+| Another Column | Bolded text |                 |              |
+| One More       |             |                 | code         |
+
+```
+Renders as:
+
+```md
+> Column Title bolded text
+> Another Column
+> One More
+```
+Renders as 
+> Column Title bolded text
+> Another Column
+> One More
+
+**HEADERS AND BREAKS**
+```md
+---Horizontal Rule
+
+### TextH3
+
+---
+
+**LISTS**
+
+Lists can be unordered or ordered, which is determined by the symbol used to list them. Unordered lists have either -, +, or \*, while ordered lists require any integer followed by a . or ) character.
+
+An ordered list:
+
+1. First item
+2. Second item
+3. Third item
+```
+
+**LINKS**
+
+There are two ways to create links. The most commonly used format includes brackets followed by parentheses: [ ] ( ) . To render a link to an image, begin with a !.
+
+Unordered List Examples:
+
+```md
+- [Link inline this way](https://https://rahulmaurya.com)
+- [Or add a title for the link](https://https://rahulmaurya.com "Google's Homepage")
+- [Here is a relative link within a repository](../blob/master/LICENSE)
+- ![I link to an image](path/to/image.png)
+```
+
+Combining the two:
+
+The second format involves brackets, [ ][ ] or [ ], followed by a reference formatted with a bracket and colon, [ ]:, anywhere else in the document.
+```md
+1. First ordered list item
+2. Second ordered list item (which shows as 2.)
+```
+Examples:
+
+```md
+- [Reference-style link][Case-insensitive Reference Text]
+- [Numbers are commonly used][1]
+- [Text can link on its own as a reference]
+
+```
+Indentation is needed for indented lists:
+
+```md
+- Indented lists require four spaces in most specifications
+  - Sublists are implementation specific
+  - Try it out and render to be sure it works
+- Continuing the list after an indentation
+```
+URLs, in and out of angle brackets, will automatically get turned into links with most implementations. Both https://rahulmaurya.com and will render as links, as well as https://rahulmaurya.com on some renderings.
+
+**BEST OF GITHUB FLAVORED MARKDOWN**
+
+Task lists are fantastic usage of the GitHub-specific implementation:
+```md
+- [x] Step one is complete
+- [ ] Step two in this unordered list is
+- [x] Step three is done as well
+````
+Renders as:
+
+- ☐ Step one is complete
+- ☑ Step two in this unordered list is
+- ☐ Step three is done as well
+
+Drop-downs are an incredible feature to tidy up files:
+
+```mdx
+<details>
+  <summary>
+    <p>Q1: What is the best website in the world? </p>
+  </summary>
+  A1: https://rahulmaurya.com
+</details>
+```
+### Renders as
+<details>
+  <summary>
+    <p>Q1: What is the best website in the world? </p>
+  </summary>
+  A1: https://rahulmaurya.com
+</details>
+
+Nearly all programming languages are supported using this syntax (python, ruby, go, rust, javascript, and java to name a few).
+
+You can also have language-specific syntax highlighting. Instead of having a code block of black-and-white text, append the language to the first set of backticks to have highlighting enabled:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Blog</title>
+</head>
+<body>
+  <h2>Contact Form</h2>
+  <form action="/submit" method="POST">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+    <br><br>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+    <br><br>
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>
+
+```
+
+---

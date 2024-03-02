@@ -1,0 +1,37 @@
+---
+title: "Your Title Here"
+date: "2024-02-28"
+description: "About markdown"
+image: "https://img.freepik.com/free-photo/medium-shot-man-wearing-vr-glasses_23-2149126949.jpg?t=st=1709096618~exp=1709100218~hmac=96f665828c960e0c607952ab122b84d6960106866e0fe1bfbba77733e8df1423&w=1380"
+---
+
+<Title text="" />
+
+## What is MDX?
+
+MDX is a format that lets you write JSX embedded within Markdown. This powerful combination allows you to create dynamic and interactive content with ease.
+
+## Why Use MDX for Blogs?
+
+- **Flexibility**: MDX provides the flexibility of Markdown for simple content along with the power of React components for more complex interactions.
+- **Ease of Use**: Writing content in Markdown is straightforward and familiar to many developers.
+- **Rich Features**: With MDX, you can easily include code snippets, interactive components, and more in your blog posts.
+
+Start exploring MDX today and unleash the full potential of your blog!
+
+<CodeBlock language="javascript">
+  {`
+<article className="py-40 text-gray-50">
+      <h1>{frontMatter.title}</h1>
+      <MDXRemote source={content} />
+</article>
+`}
+</CodeBlock>
+
+<CodeBlock language="javascript">
+  {`
+console.log("Hello, world!");
+`}
+</CodeBlock>
+
+<code>```Js console.log("Hello World") ```</code>
