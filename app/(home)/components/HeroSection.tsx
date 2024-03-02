@@ -22,12 +22,11 @@ const HeroSection = () => {
           wonders from both frontend and backend realms. Embracing innovation, I
           craft captivating online experiences with precision and passion.
         </p>
-        <div className="flex gap-5 ">
+        <div className="flex  lg:flex-row items-center justify-center lg:justify-start gap-5 ">
           <Button />
-
           <MovingBorderButton
             borderRadius="0.5rem"
-            className="p-[2px] md:p-2 lg:p-3 font-semibold"
+            className="p-[11px] md:p-2 lg:p-3 font-semibold"
           >
             Download Resume
           </MovingBorderButton>
