@@ -4,8 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
 import Navbar from "./(home)/components/Navbar";
-import "@code-hike/mdx/dist/index.css"
-
+import "@code-hike/mdx/dist/index.css";
+import Footer from "./(home)/components/Footer";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rahulmaurya.vercel.app/"),
@@ -29,7 +29,14 @@ export const metadata: Metadata = {
     images: "/og.svg",
     type: "website",
   },
-  keywords: ["Rahul Maurya portfolio ", "rahul maurya vercel.app","Rahul Maurya Lucknow Institute of Technology","Rahul Maurya Varanasi","Rahul Maurya Rahul577503","Rahul Maurya github"],
+  keywords: [
+    "Rahul Maurya portfolio ",
+    "rahul maurya vercel.app",
+    "Rahul Maurya Lucknow Institute of Technology",
+    "Rahul Maurya Varanasi",
+    "Rahul Maurya Rahul577503",
+    "Rahul Maurya github",
+  ],
 };
 
 export default function RootLayout({
@@ -48,10 +55,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main>
-            <Navbar />
-            {children}
-          </main>
+          <Navbar />
+          {children}
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

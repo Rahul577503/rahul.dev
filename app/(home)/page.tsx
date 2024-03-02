@@ -2,7 +2,6 @@ import React from "react";
 import HeroSection from "./components/HeroSection";
 import Skills from "./components/Skills";
 import Project from "./components/Project";
-import Footer from "./components/Footer";
 import Contact from "./components/Contact";
 const page = () => {
   return (
@@ -17,9 +16,6 @@ const page = () => {
           <Project />
           <Contact />
         </div>
-      </div>
-      <div>
-        <Footer />
       </div>
     </div>
   );
