@@ -30,7 +30,7 @@ const HeroSection = () => {
           <Button />
           <MovingBorderButton
             borderRadius="0.5rem"
-            className="p-3 md:p-2 lg:p-3 font-semibold"
+            className="p-3.5 md:p-2 lg:p-3 font-semibold"
           >
             Download Resume
           </MovingBorderButton>
