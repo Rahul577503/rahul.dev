@@ -8,9 +8,7 @@ const Page = () => {
   return (
     <div className="py-5">
       <div className="dark:bg-black bg-black dark:bg-grid-white/[0.05] bg-grid-white/[0.03] relative">
-        <div className="p-5">
-          <HeroSection />
-        </div>
+        <HeroSection />
         <div className="h-20 xl:h-32 bg-gradient-to-t from-black absolute  min-w-full"></div>
         <div className="mx-auto p-5 text-white mt-20">
           <Skills />

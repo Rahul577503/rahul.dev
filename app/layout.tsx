@@ -47,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${spaceGrotesk.className} bg-black overflow-x-hidden line-height-[1.5] antialiased`}
+        className={`${spaceGrotesk.className} bg-black  line-height-[1.5] antialiased`}
       >
         <ThemeProvider
           attribute="class"

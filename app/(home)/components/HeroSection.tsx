@@ -6,7 +6,7 @@ import Button from "./Button";
 
 const HeroSection = () => {
   return (
-    <div className="min-h-screen   py-10  px-5  flex-col-reverse flex  lg:flex-row items-center justify-between gap-10 lg:gap-5 animate-move-up">
+    <div className="min-h-screen  overflow-hidden py-10  px-5  flex-col-reverse flex  lg:flex-row items-center justify-between gap-10 lg:gap-5 animate-move-up">
       <div className="lg:w-1/2 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-4">
         <h1 className="text-3xl lg:text-7xl md:text-2xl font-bold text-white">
           <span className="inline-block">Hii There !</span>{" "}
