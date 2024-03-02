@@ -10,17 +10,17 @@ interface SocialItem {
 
 const socials: SocialItem[] = [
   {
-    Link: "link-to-github",
+    Link: "https://github.com/Rahul577503",
     Label: "GitHub",
     Icon: SiGithub,
   },
   {
-    Link: "link-to-x",
+    Link: "https://twitter.com/RahulMa09588359",
     Label: "X",
     Icon: SiX,
   },
   {
-    Link: "link-to-linkedin",
+    Link: "https://www.linkedin.com/in/rahul-maurya-6abb491b8",
     Label: "LinkedIn",
     Icon: SiLinkedin,
   },
