@@ -7,14 +7,13 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import Title from "../../components/Title";
 import GoBack from "../../components/GoBack";
 import CodeBlock from "../../components/CodeBlock";
-import CodeHike from "../../components/CodeHike";
 
 interface CustomComponents {
   [key: string]: React.ComponentType<any>;
 }
 
 const components: CustomComponents = {
-  Title,CodeBlock,CodeHike,
+  Title,CodeBlock,
 };
 
 export async function generateStaticParams() {
