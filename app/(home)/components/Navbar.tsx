@@ -28,8 +28,8 @@ const socials: SocialItem[] = [
 
 const Navbar = () => {
   return (
-    <header className="fixed left-0 right-0 top-0 z-10 bg-black bg-opacity-50 backdrop-blur-lg animate-move-down min-w-full">
-      <nav className="flex justify-between items-center py-5 px-2 lg:px-10">
+    <header className="fixed  top-0 z-10 bg-black bg-opacity-50 backdrop-blur-lg animate-move-down min-w-full">
+      <nav className="flex justify-between items-center h-[15vh] lg:px-10">
         <h1 className="text-xl md:xl lg:text-2xl font-bold underline underline-offset-8 decoration-amber-400 -rotate-2 text-white">
           <Link href={"/"}>Rahul Maurya. 🧑‍💻</Link>
         </h1>
