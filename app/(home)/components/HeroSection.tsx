@@ -6,11 +6,11 @@ import Button from "./Button";
 
 const HeroSection = () => {
   return (
-    <div className="min-h-[60vh] py-20 px-5 flex flex-col-reverse lg:flex-row items-center justify-between min-w-full gap-14 lg:gap-0 relative animate-move-up">
-      <div className="lg:w-1/2 space-y-10 text-center lg:text-left">
+    <div className="min-h-screen   py-10 lg:py-10 px-5  flex-col-reverse flex  lg:flex-row items-center justify-between gap-10 lg:gap-0 relative animate-move-up">
+      <div className="lg:w-1/2 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-4">
         <h1 className="text-3xl lg:text-7xl md:text-2xl font-bold text-white">
-          <span className="inline-block ">Hii There !</span>{" "}
-          <span className="inline-block wave  lg:text-6xl text-2xl ">👋</span>
+          <span className="inline-block">Hii There !</span>{" "}
+          <span className="inline-block wave lg:text-6xl text-2xl ">👋</span>
           <br />
           <span className="underline text-3xl lg:text-5xl underline-offset-8 decoration-amber-400">
             {"I'm Rahul"}
@@ -22,11 +22,11 @@ const HeroSection = () => {
           wonders from both frontend and backend realms. Embracing innovation, I
           craft captivating online experiences with precision and passion.
         </p>
-        <div className="flex  lg:flex-row items-center justify-center lg:justify-start gap-5 ">
+        <div className="flex  lg:flex-row items-center justify-center lg:justify-start gap-5 mt-5">
           <Button />
           <MovingBorderButton
             borderRadius="0.5rem"
-            className="p-[11px] md:p-2 lg:p-3 font-semibold"
+            className="p-2 md:p-2 lg:p-3 font-semibold"
           >
             Download Resume
           </MovingBorderButton>
