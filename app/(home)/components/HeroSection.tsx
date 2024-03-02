@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import React from "react";
 import Image from "next/legacy/image";
 import Profile from "@/public/me.svg";
@@ -6,7 +7,7 @@ import Button from "./Button";
 
 const HeroSection = () => {
   return (
-    <div className="min-h-screen  overflow-hidden py-10  px-5  flex-col-reverse flex  lg:flex-row items-center justify-between gap-10 lg:gap-5 animate-move-up">
+    <div className="min-h-screen  overflow-hidden py-10  px-5  flex-col-reverse flex  lg:flex-row items-center justify-between gap-5 lg:gap-5 animate-move-up">
       <div className="lg:w-1/2 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-4">
         <h1 className="text-3xl lg:text-7xl md:text-2xl font-bold text-white">
           <span className="inline-block">Hii There !</span>{" "}
@@ -18,15 +19,18 @@ const HeroSection = () => {
         </h1>
 
         <p className="text-lg text-gray-300">
-          {"I'm"} Rahul, a versatile full-stack developer, weaving digital
-          wonders from both frontend and backend realms. Embracing innovation, I
-          craft captivating online experiences with precision and passion.
+          I'm a dynamic full-stack developer passionate about crafting
+          captivating digital experiences. With expertise in frontend and
+          backend development, I specialize in creating sleek interfaces and
+          scalable systems. Fueled by innovation and a love for problem-solving,
+          I thrive on pushing the boundaries of what's possible. Let's
+          collaborate and bring your vision to life!"
         </p>
         <div className="flex  lg:flex-row items-center justify-center lg:justify-start gap-5 mt-5">
           <Button />
           <MovingBorderButton
             borderRadius="0.5rem"
-            className="p-2 md:p-2 lg:p-3 font-semibold"
+            className="p-3 md:p-2 lg:p-3 font-semibold"
           >
             Download Resume
           </MovingBorderButton>
