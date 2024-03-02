@@ -72,7 +72,7 @@ const Skills = () => {
   ];
 
   return (
-    <div className="flex justify-center items-center flex-col max-w-5xl mx-auto px-8">
+    <div className="flex justify-center items-center flex-col  mx-auto px-8">
       <Title
         text="Skills"
         className={"flex flex-col justify-center items-center  rotate-6"}
