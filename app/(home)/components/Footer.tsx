@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 const Footer = () => {
   return (
-    <div className="text-gray-200">
+    <div className="text-gray-200 relative top-[6rem] bottom-0 left-0 right-0">
       <div className="flex justify-center flex-col items-center">
         <p className="text-xs lg:text-sm text-center lg:text-center lg:mb-2 lg:mt-2">
           &copy; {new Date().getFullYear()}-present Rahul Maurya. All Rights Reserved.
