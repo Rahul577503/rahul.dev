@@ -1,0 +1,245 @@
+---
+title: "TypeScript Cheatsheet"
+date: "2024-02-28"
+description: "Learn Typescript with this cheatSheet"
+image: "https://img.freepik.com/free-photo/programming-background-with-person-working-with-codes-computer_23-2150010129.jpg?t=st=1717184113~exp=1717187713~hmac=33377f902a2205fe5e1688af56809e0a3525d04c21875d103acc5e5ed674677a&w=1480"
+---
+
+
+## Install
+
+- **Note:** You need to have npm installed.
+- Avoid using TypeScript globally in a team to prevent version conflicts.
+
+```bash
+npm install -g typescript
+```
+## File Extensions
+
+- TypeScript files have extensions `.ts` or `.tsx` (for React JSX files).
+
+## Compile
+
+To compile TypeScript files:
+
+```bash
+tsc --watch
+```
+
+## Run
+
+To run TypeScript code:
+
+```bash
+node index.js
+```
+
+**Tip:** Use `nodemon` to watch for changes and restart the server automatically.
+
+```bash
+npm install -g nodemon
+nodemon index.js
+```
+
+Or directly use `nodemon` with `.ts` files:
+
+```bash
+nodemon index.ts
+```
+
+## Config File
+
+Use `tsconfig.json` to configure TypeScript. You can generate a config file with `tsc --init`.
+
+```json
+{
+  "outDir": "./dist",
+  "rootDir": "./src",
+  "target": "es6"
+}
+```
+
+## Basic Types
+
+<CodeBlock code={`
+let number: number = 32;
+let string: string = 'John';
+let boolean = true;
+let any: any = 'this could be any type';
+
+let arrayOfNumbers: number[] = [1, 2, 3];
+let arrayOfStrings: string[] = ['a', 'b', 'c'];
+let arrayOfAny: any[] = [1, 'a', true];
+let arrayOfObjects: object[] = [{ a: 1 }, { b: 2 }];
+
+let tuple: [string, number] = ['a', 1];
+let tupleArray: [string, number][] = [
+  ['a', 1],
+  ['b', 2]
+];
+`} language="typescript"/>
+
+## Union
+<CodeBlock code ={`
+let union: string | number = 'a';
+union = 1;
+
+`} language = 'ts'/>
+
+
+## Objects
+
+<CodeBlock code={`
+type User = {
+  name: string;
+  age: number;
+};
+
+const user: User = {
+  name: 'Jack',
+  age: 32
+};
+
+`} language = 'ts'/>
+<br/>
+
+
+## Functions
+
+<CodeBlock code ={`
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+const subtract = (a: number, b: number): number => a - b;
+
+function log(message: string | number): void {
+  console.log(message);
+}
+`} language ="ts"/>
+
+<br/>
+
+## Interfaces
+
+<CodeBlock code ={`
+interface UserInterface {
+  readonly id: number;
+  name: string;
+  age?: number;
+}
+
+const user1: UserInterface = {
+  id: 1,
+  name: 'John'
+};
+user1.age = 47;
+
+`} language="ts"/>
+
+<br/>
+
+## Classes
+
+<CodeBlock code ={`
+
+class Person {
+  constructor(public id: number, public name: string) {}
+
+  register() {
+    return \`\${this.name} is now registered\`;
+  }
+}
+
+const person1 = new Person(1, 'Jack');
+`} language = "ts"/>
+
+<br/>
+
+## Type Assertion
+
+<CodeBlock code ={`
+let customerID: any = '123';
+let customerIDAsNumber = customerID as number;
+let customerIDAsNumber2 = <number>customerID;
+
+`} language= "ts"/>
+
+
+## Extending Classes (Subclasses)
+
+<CodeBlock code ={`
+class Employee extends Person {
+  constructor(id: number, name: string, public position: string) {
+    super(id, name);
+  }
+
+  register() {
+    return \`\${this.name} is now registered as an employee\`\;
+  }
+}
+
+const employee1 = new Employee(1, 'James', 'Developer');
+
+`} language="ts"/>
+
+
+
+<br/>
+
+## Generics
+## Generics (allow us to create reusable components)
+
+`<T>` is a placeholder that allows to later define the type of the generic
+
+<CodeBlock code ={`
+
+function getId<T>(id: T): T {
+  return id;
+}
+
+const numberId = getId<number>(1);
+const stringId = getId<string>('1');
+
+`} language ="ts"/>
+
+## Enums
+
+<CodeBlock code ={`
+enum Color {
+  Red,
+  Green,
+  Blue
+}
+
+let color: Color = Color.Blue; // 2
+`} language ="ts"/>
+
+
+## TypeScript Docs
+
+- [Download TypeScript](https://www.typescriptlang.org/download)
+
+
+## Pick and Omit
+
+Pick and Omit are utility types in TypeScript:
+<br/>
+
+<CodeBlock code ={`
+
+interface User {
+  id: number;
+  name: string;
+  lastName: string;
+  age: number;
+}
+
+type Username = Pick<User, 'name' | 'lastName'>;
+
+type UserWithoutId = Omit<User, 'id'>;
+
+`} language ="ts"/>
+
+---
+

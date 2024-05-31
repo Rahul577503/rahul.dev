@@ -6,7 +6,7 @@ import Image from "next/legacy/image";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import Title from "../../components/Title";
 import GoBack from "../../components/GoBack";
-import CodeBlock from "../../components/CodeBlock";
+import CodeBlock from "../../components/Code";
 
 interface CustomComponents {
   [key: string]: React.ComponentType<any>;
