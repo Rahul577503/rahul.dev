@@ -19,19 +19,9 @@ MDX is a format that lets you write JSX embedded within Markdown. This powerful 
 
 Start exploring MDX today and unleash the full potential of your blog!
 
-<CodeBlock language="javascript">
-  {`
+<CodeBlock code={`
 <article className="py-40 text-gray-50">
       <h1>{frontMatter.title}</h1>
       <MDXRemote source={content} />
 </article>
-`}
-</CodeBlock>
-
-<CodeBlock language="javascript">
-  {`
-console.log("Hello, world!");
-`}
-</CodeBlock>
-
-<code>```Js console.log("Hello World") ```</code>
+` } language ='html'/>

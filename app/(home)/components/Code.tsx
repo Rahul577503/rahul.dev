@@ -1,3 +1,4 @@
+'use client'
 import React from "react";
 import Prism from "prismjs";
 import "prismjs/components/prism-jsx";
@@ -25,11 +26,7 @@ const highlight = (code: string, language = "markup") => {
     case "typescript":
       return Prism.highlight(code, Prism.languages.typescript, language);
     default:
-      return Prism.highlight(
-        code,
-        Prism.languages[language] || Prism.languages.markup,
-        language
-      );
+      return Prism.highlight(code, Prism.languages[language] || Prism.languages.markup, language);
   }
 };
 

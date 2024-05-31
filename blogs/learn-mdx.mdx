@@ -18,21 +18,14 @@ export const metadata = {
 ### Tables are a common extension of the official markdown definition (CommonMark). They can be formatted in quite a lot of ways:
 
 ```md
-| _italic_       | **bold**    | strike­thr­ough | code in-line |
+| _italic_       | **bold**    | strike­through | code in-line |
 | -------------- | ----------- | --------------- | ------------ |
 | Column Title   |             |                 |              |
 | Another Column | Bolded text |                 |              |
 | One More       |             |                 | code         |
-
 ```
 Renders as:
 
-```md
-> Column Title bolded text
-> Another Column
-> One More
-```
-Renders as 
 > Column Title bolded text
 > Another Column
 > One More
@@ -40,7 +33,7 @@ Renders as
 **HEADERS AND BREAKS**
 ```md
 ---Horizontal Rule
-
+```
 ### TextH3
 
 ---
@@ -50,7 +43,7 @@ Renders as
 Lists can be unordered or ordered, which is determined by the symbol used to list them. Unordered lists have either -, +, or \*, while ordered lists require any integer followed by a . or ) character.
 
 An ordered list:
-
+```md
 1. First item
 2. Second item
 3. Third item
@@ -63,8 +56,8 @@ There are two ways to create links. The most commonly used format includes brack
 Unordered List Examples:
 
 ```md
-- [Link inline this way](https://https://rahulmaurya.com)
-- [Or add a title for the link](https://https://rahulmaurya.com "Google's Homepage")
+- [Link inline this way](https://rahulmaurya.com)
+- [Or add a title for the link](https://rahulmaurya.com "Google's Homepage")
 - [Here is a relative link within a repository](../blob/master/LICENSE)
 - ![I link to an image](path/to/image.png)
 ```
@@ -82,7 +75,6 @@ Examples:
 - [Reference-style link][Case-insensitive Reference Text]
 - [Numbers are commonly used][1]
 - [Text can link on its own as a reference]
-
 ```
 Indentation is needed for indented lists:
 
@@ -96,12 +88,13 @@ URLs, in and out of angle brackets, will automatically get turned into links wit
 
 **BEST OF GITHUB FLAVORED MARKDOWN**
 
-Task lists are fantastic usage of the GitHub-specific implementation:
+Task lists are a fantastic usage of the GitHub-specific implementation:
 ```md
 - [x] Step one is complete
 - [ ] Step two in this unordered list is
 - [x] Step three is done as well
-````
+```
+
 Renders as:
 
 - ☐ Step one is complete
@@ -110,27 +103,31 @@ Renders as:
 
 Drop-downs are an incredible feature to tidy up files:
 
-```mdx
+<CodeBlock code={`
 <details>
   <summary>
-    <p>Q1: What is the best website in the world? </p>
+    <p>Q1: What is the best website in the world?</p>
   </summary>
-  A1: https://rahulmaurya.com
+  A1: <a href="https://rahulmaurya.com">https://rahulmaurya.com</a>
 </details>
-```
+`} language="html" />
+
 ### Renders as
+
+<CodeBlock code={`
 <details>
   <summary>
-    <p>Q1: What is the best website in the world? </p>
+    <p>Q1: What is the best website in the world?</p>
   </summary>
   A1: https://rahulmaurya.com
 </details>
+`} language="html" />
 
 Nearly all programming languages are supported using this syntax (python, ruby, go, rust, javascript, and java to name a few).
 
 You can also have language-specific syntax highlighting. Instead of having a code block of black-and-white text, append the language to the first set of backticks to have highlighting enabled:
 
-```html
+<CodeBlock code={`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,7 +147,4 @@ You can also have language-specific syntax highlighting. Instead of having a cod
   </form>
 </body>
 </html>
-
-```
-
----
+`} language="html"/>

@@ -55,7 +55,7 @@ export default function Page({ params }: any) {
       <Image
         src={frontMatter.image}
         alt={frontMatter.title}
-        height={200}
+        height={800}
         width={1280}
         className="rounded-md"
       />
