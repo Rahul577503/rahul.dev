@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React from "react";
 import Prism from "prismjs";
 import "prismjs/components/prism-jsx";
@@ -26,7 +26,11 @@ const highlight = (code: string, language = "markup") => {
     case "typescript":
       return Prism.highlight(code, Prism.languages.typescript, language);
     default:
-      return Prism.highlight(code, Prism.languages[language] || Prism.languages.markup, language);
+      return Prism.highlight(
+        code,
+        Prism.languages[language] || Prism.languages.markup,
+        language
+      );
   }
 };
 
@@ -34,8 +38,12 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
   const highlightedCode = highlight(code, language);
 
   return (
-    <BackgroundGradient className="rounded-[22px] w-full p-4 bg-black">
-      <pre className="overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-red-300">
+    <BackgroundGradient
+      className="rounded-[22px] w-full p-4 bg-black "
+      containerClassName="bg-black"
+      animate={false}
+    >
+      <pre className="overflow-x-auto  scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-red-300">
         <code
           className="inline-block"
           dangerouslySetInnerHTML={{

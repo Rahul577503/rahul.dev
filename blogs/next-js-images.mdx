@@ -1,0 +1,111 @@
+---
+title: OptimizingImages in Next.
+date: 05-05-2024
+image: "https://img.freepik.com/free-photo/male-suit-with-virtual-reality-glasses-his-head-working-virtual-financial-world_613910-306.jpg?t=st=1717589266~exp=1717592866~hmac=49102334ae4c51d979642aa9199fbc62eef1bd925f150c5327cf9816c45b76a1&w=1480"
+description:  Optimizing External Images in Next.js.
+---
+
+In modern web development, optimizing images is crucial for enhancing website performance and user experience. Next.js provides powerful built-in support for image optimization, allowing developers to efficiently handle both local and external images. In this blog post, we'll explore how to configure Next.js to optimize images from external sources using the `remotePatterns` and `domains` properties in `next.config.js`.
+
+#### Introduction
+
+Next.js simplifies image optimization with its `next/image` component. This component automatically optimizes images on-demand as users request them, ensuring faster load times and better performance. When dealing with external images, Next.js offers two key configuration options: `remotePatterns` and `domains`. Let's dive into these options and see how they can be configured.
+
+### Configuring External Image Optimization
+
+#### 1. The `remotePatterns` Property
+
+The `remotePatterns` property allows you to define specific URL patterns for external images. This is useful when you want to optimize images hosted on specific paths of an external domain. Here’s an example configuration:
+
+<CodeBlock code ={`
+
+module.exports = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+        port: '',
+        pathname: '/account123/**',
+      },
+    ],
+  },
+};
+
+`} language="js"/>
+
+
+**Explanation:**
+
+- **`protocol`**: Specifies the protocol (`http` or `https`). Here, it is set to `https`.
+- **`hostname`**: Specifies the hostname of the external image source. In this case, it is `example.com`.
+- **`port`**: Specifies the port. Here, it is left as an empty string, meaning it defaults to the standard port for the protocol.
+- **`pathname`**: Specifies the pathname pattern. Here, it is `/account123/**`, meaning any path under `/account123` on `example.com` is allowed.
+
+This configuration allows Next.js to optimize any image from `https://example.com/account123/**`.
+
+#### 2. The `domains` Property
+
+The `domains` property is used to specify a list of allowed domains for external images. This is simpler than `remotePatterns` and allows images from specified domains to be optimized.
+
+<CodeBlock code ={`
+module.exports = {
+  images: {
+    domains: ['images.pexels.com'],
+  },
+};
+
+`} language ="js"/>
+
+**Explanation:**
+
+- **`domains`**: An array of strings representing allowed domains. Here, `images.pexels.com` is specified, meaning any image from `images.pexels.com` can be optimized.
+
+This configuration enables Next.js to optimize images from `images.pexels.com`.
+
+### Combining Both Configurations
+
+You can combine both `remotePatterns` and `domains` in your `next.config.js` to handle multiple sources of external images with different patterns and domains. Here’s an example:
+
+<CodeBlock code ={`
+module.exports = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+        port: '',
+        pathname: '/account123/**',
+      },
+    ],
+    domains: ['images.pexels.com'],
+  },
+};
+
+`} language="js"/>
+
+### Benefits of Optimizing External Images
+
+Using these configurations in Next.js, you can:
+
+- **Enhance Performance**: Optimized images load faster, improving overall site performance.
+- **Reduce Bandwidth**: Smaller, optimized images consume less bandwidth.
+- **Improve SEO**: Faster load times contribute to better search engine rankings.
+- **Ensure Security**: By specifying trusted domains and patterns, you reduce the risk of loading malicious content.
+
+### Conclusion
+
+Optimizing images is a crucial aspect of modern web development, and Next.js makes it easy to handle both local and external images efficiently. By configuring `remotePatterns` and `domains`, you can ensure that your application benefits from Next.js's powerful image optimization capabilities, enhancing performance and user experience.
+
+Integrate these configurations into your Next.js projects to take full advantage of optimized images from external sources, ensuring a faster, more secure, and user-friendly web application. Happy coding!
+
+### Further Reading
+
+- [Next.js Image Optimization Documentation](https://nextjs.org/docs/basic-features/image-optimization)
+- [Optimizing Images with the `next/image` Component](https://nextjs.org/docs/api-reference/next/image)
+- [Configuring Remote Patterns for External Images](https://nextjs.org/docs/api-reference/next.config.js/images#remotepatterns)
+- [Allowing External Domains for Image Optimization](https://nextjs.org/docs/api-reference/next.config.js/images#domains)
+
+By following this guide, you'll be well-equipped to optimize external images in your Next.js applications, ensuring a seamless and performant user experience.
+
+---

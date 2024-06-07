@@ -7,13 +7,14 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import Title from "../../components/Title";
 import GoBack from "../../components/GoBack";
 import CodeBlock from "../../components/Code";
+import BoopButton from "../../components/BoopButton";
 
 interface CustomComponents {
   [key: string]: React.ComponentType<any>;
 }
 
 const components: CustomComponents = {
-  Title,CodeBlock,
+  Title,CodeBlock,BoopButton
 };
 
 export async function generateStaticParams() {
@@ -58,10 +59,10 @@ export default function Page({ params }: any) {
         height={800}
         width={1280}
         className="rounded-md"
+        priority={true}
       />
 
       <MDXRemote source={content} components={components}></MDXRemote>
-      <GoBack />
     </article>
   );
 }
