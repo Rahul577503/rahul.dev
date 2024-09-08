@@ -51,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${ibmPlexMono.className} bg-black text-white line-height-[1.5] antialiased relative`}
+        className={`${ibmPlexMono.className} bg-black text-white line-height-[1.5] overflow-x-hidden antialiased relative`}
       >
         <ThemeProvider
           attribute="class"
