@@ -1,23 +1,27 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
 import Navbar from "./(home)/components/Navbar";
 import "@code-hike/mdx/dist/index.css";
 import Footer from "./(home)/components/Footer";
+import Layout from "./(home)/components/Layout.tsx/Layout";
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rahulmaurya.vercel.app/"),
 
   title: {
-    template: "%s | Rahul Maurya ",
-    default: "Rahul Maurya ",
+    template: "%s | Rahul Maurya",
+    default: "Rahul Maurya",
   },
   authors: {
     name: "Rahul Maurya",
   },
-
   description:
     "I'm Rahul, a versatile full-stack developer, weaving digital wonders from both frontend and backend realms. Embracing innovation, I craft captivating online experiences with precision and passion.",
   openGraph: {
@@ -30,12 +34,12 @@ export const metadata: Metadata = {
     type: "website",
   },
   keywords: [
-    "Rahul Maurya portfolio ",
+    "Rahul Maurya portfolio",
     "rahul maurya vercel.app",
-    "Rahul Maurya Lucknow Institute of Technology",
+    "rahul577503",
     "Rahul Maurya Varanasi",
     "Rahul Maurya Rahul577503",
-    "Rahul Maurya github",
+    "https://github.com/Rahul577503",
   ],
 };
 
@@ -47,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${spaceGrotesk.className} bg-black  line-height-[1.5] antialiased relative `}
+        className={`${ibmPlexMono.className} bg-black text-white line-height-[1.5] antialiased relative`}
       >
         <ThemeProvider
           attribute="class"
@@ -55,9 +59,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
-          {children}
-          <Footer />
+          <Layout>{children}</Layout>
         </ThemeProvider>
       </body>
     </html>

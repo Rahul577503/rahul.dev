@@ -14,7 +14,9 @@ interface CustomComponents {
 }
 
 const components: CustomComponents = {
-  Title,CodeBlock,BoopButton
+  Title,
+  CodeBlock,
+  BoopButton,
 };
 
 export async function generateStaticParams() {
@@ -30,7 +32,7 @@ export async function generateStaticParams() {
 function getPost({ slug }: { slug: string }) {
   const markdownFile = fs.readFileSync(
     path.join("blogs", slug + ".mdx"),
-    "utf-8"
+    "utf-8",
   );
 
   const { data: frontMatter, content } = matter(markdownFile);
@@ -46,7 +48,7 @@ export default function Page({ params }: any) {
   const { frontMatter, content } = getPost(params);
 
   return (
-    <article className="prose px-2 lg:px-0 py-[200px] prose-sm md:prose-base lg:prose-lg prose-slate !prose-invert mx-auto max-w-[1280px]">
+    <article className="prose px-2 lg:px-0 py-2 prose-sm md:prose-base lg:prose-lg prose-slate !prose-invert mx-auto max-w-screen-lg">
       <div className="flex justify-between item-center">
         <h1>{frontMatter.title}</h1>
         <div>
