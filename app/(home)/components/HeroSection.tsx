@@ -16,11 +16,11 @@ const HeroSection = () => {
         </h1>
 
         <p className="text-base md:text-lg lg:text-xl xl:text-xl text-gray-300">
-          I'm a dynamic full-stack developer passionate about crafting
+          {"I'm"} a dynamic full-stack developer passionate about crafting
           captivating digital experiences. With expertise in frontend and
           backend development, I specialize in creating sleek interfaces and
           scalable systems. Fueled by innovation and a love for problem-solving,
-          I thrive on pushing the boundaries of what's possible. Let's
+          I thrive on pushing the boundaries of {"what's"} possible. {"Let's"}
           collaborate and bring your vision to life!
         </p>
         <div className="flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-4 mt-5">

@@ -49,7 +49,7 @@ export default function Page({ params }: any) {
 
   return (
     <article className="prose px-2 lg:px-0 py-2 prose-sm md:prose-base lg:prose-lg prose-slate !prose-invert mx-auto max-w-screen-lg">
-      <div className="flex justify-between item-center">
+      <div className="flex justify-between">
         <h1>{frontMatter.title}</h1>
         <div>
           <GoBack />

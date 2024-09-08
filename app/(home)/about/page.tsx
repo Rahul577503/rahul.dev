@@ -24,28 +24,42 @@ const aboutMeContent: Section = {
   content: (
     <>
       <p className="text-lg text-gray-100">
-        Hey, I'm Tania. I've been a software engineer since 2014 (previously I
-        was a chef), and I've been making websites since 1998. I also have a DDR
-        machine in the basement, two cats, and a wonderful partner. I like
-        working out, playing video games, and occasionally updating this
-        website.
+        Hey there! I’m Rahul, a passionate full-stack developer dedicated to
+        crafting exceptional digital experiences. With a knack for both frontend
+        and backend development, I specialize in designing sleek, intuitive
+        interfaces and building robust, scalable systems.
         <br />
         <br />
-        Welcome to my spot on the web for writing, projects, tutorials, art, and
-        anything else I want to put out there. You can read some of my personal
-        thoughts, as well as all the technical articles I've written over the
-        years. Take a look at the projects page to see a highlight of my
-        open-source work.
+        Since I first dipped my toes into coding, I’ve been driven by a desire
+        to push the boundaries of what’s possible and solve complex problems
+        with innovative solutions. Whether {"it's"} creating engaging user
+        experiences or optimizing server-side performance, I’m always up for a
+        new challenge.
         <br />
         <br />
-        My site has no ads, no affiliate links, no tracking or analytics, no
-        sponsored posts, and no paywall. My motivation for the site is to have a
-        space for self-expression and to share what I've learned with the world.
-        I hope I will inspire others to make their own creative corner on the
-        web in the uphill battle against the enshittification of the internet.
+        This space is where I share my journey, including my latest projects,
+        tutorials, and insights into the tech world. Here, {"you'll"} find
+        everything from personal reflections to detailed technical articles and
+        showcases of my open-source contributions.
         <br />
-        <br />I don't post too often, so feel free to subscribe to the RSS feed
-        for updates when I do.
+        <br />
+        My site is a no-frills zone—no ads, affiliate links, tracking, or
+        paywalls. It’s a platform for self-expression and knowledge-sharing,
+        with the hope of inspiring others to create their own corner of the web.
+        Join me as I navigate the ever-evolving landscape of technology and
+        creativity.
+        <br />
+        <br />
+        For updates on new content and to connect with me directly, feel free to
+        reach out at{" "}
+        <a
+          href="mailto:rahulmaurya109626@gmail.com"
+          className="text-yellow-400 hover:underline"
+        >
+          Mail
+        </a>
+        . I’m always excited to collaborate, answer questions, or discuss new
+        ideas. Let’s bring your innovative visions to life together!
       </p>
     </>
   ),
@@ -103,13 +117,36 @@ const currentActivitiesContent: Section = {
   content: (
     <>
       <p className="text-lg text-gray-100">
-        <strong>Updated July 10th, 2024</strong>
+        <strong>Updated September 8th, 2024</strong>
       </p>
-      <ul className="list-disc pl-5 text-lg text-gray-100">
-        <li>Working full time</li>
-        <li>Building a replica of our home out of Lego</li>
-        <li>Trying for the nth time to get into shape</li>
-        <li>Tweaking this website</li>
+      <p className="text-lg text-gray-100">
+        Currently working as a Software Developer Intern at
+        <a
+          href="https://storemygoods.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-yellow-400 hover:underline"
+        >
+          Store My Goods
+        </a>
+        , where I’m helping build efficient solutions for logistics and storage
+        management.
+      </p>
+      <ul className="list-disc pl-5 text-lg text-gray-100 mt-3">
+        <li>
+          Experimenting with cutting-edge technologies to streamline operations.
+        </li>
+        <li>
+          Trying to build a better fitness routine (and succeeding...
+          sometimes!).
+        </li>
+        <li>
+          Constantly tweaking and optimizing this website for performance and
+          style.
+        </li>
+        <li>
+          Finding creative ways to build my dream projects in my spare time.
+        </li>
       </ul>
     </>
   ),

@@ -38,7 +38,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language }) => {
   const highlightedCode = highlight(code, language);
 
   return (
-    <div className="rounded-[22px] border w-full p-4 bg-black ">
+    <div className="rounded-[22px] border border-gray-100 w-full bg-black ">
       <pre className="overflow-x-auto scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-red-300">
         <code
           className="inline-block"
