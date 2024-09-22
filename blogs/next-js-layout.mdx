@@ -2,7 +2,7 @@
 title: "Improving Next.js Layout"
 date: "2024-03-11"
 image: "https://img.freepik.com/free-photo/male-suit-with-virtual-reality-glasses-his-head-working-virtual-financial-world_613910-306.jpg?t=st=1717589266~exp=1717592866~hmac=49102334ae4c51d979642aa9199fbc62eef1bd925f150c5327cf9816c45b76a1&w=1480"
-description: Improving your Next.js Layout components 
+description: Improving your Next.js Layout components
 ---
 
 In your Next.js project, you might have a `Layout` component that wraps your pages to provide consistent structure and styling. Let's explore how you can improve this `Layout` component for better usability and maintainability.
@@ -12,27 +12,27 @@ In your Next.js project, you might have a `Layout` component that wraps your pag
 One important aspect of component design is error handling. We should ensure that our `Layout` component gracefully handles cases where the `children` prop is not provided. This prevents potential runtime errors and improves the robustness of our application.
 
 <CodeBlock code={`
-import { ReactNode } from 'react'; 
-import Navbar from './navbar'; 
+import { ReactNode } from 'react';
+import Navbar from './navbar';
 import Footer from './footer';
 
 type Props = {
-  children?: ReactNode; 
-}; 
+  children?: ReactNode;
+};
 
 const Layout = ({ children }: Props) => {
   if (!children) return null; // Error handling
 
-  return ( 
+  return (
     <div className="container">
-      <Navbar /> 
-      <main role="main">{children}</main> 
-      <Footer /> 
-    </div> 
-  ); 
-}; 
+      <Navbar />
+      <main role="main">{children}</main>
+      <Footer />
+    </div>
+  );
+};
 
 export default Layout;
-`} language="jsx"/>
+`} language="jsx" filename="Layout.tsx"/>
 
 ---

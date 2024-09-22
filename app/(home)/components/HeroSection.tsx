@@ -5,7 +5,7 @@ import { MovingBorderButton } from "@/components/ui/moving-border";
 
 const HeroSection = () => {
   return (
-    <div className="min-h-screen max-w-screen-lg mx-auto px-4 flex flex-col-reverse lg:flex-row items-center justify-between gap-4 lg:gap-8">
+    <div className="min-h-screen w-full md:max-w-screen lg:max-w-screen-lg mx-auto px-4 flex flex-col-reverse lg:flex-row items-center justify-between gap-4 lg:gap-8">
       <div className="lg:w-1/2 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-4">
         <h1 className="text-xl md:text-2xl lg:text-2xl xl:text-3xl font-bold text-white">
           <span className="inline-block">Hey!</span>{" "}
