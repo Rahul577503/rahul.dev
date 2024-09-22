@@ -4,10 +4,10 @@ import matter from "gray-matter";
 import Image from "next/legacy/image";
 
 import { MDXRemote } from "next-mdx-remote/rsc";
-import Title from "../../components/Title";
-import GoBack from "../../components/GoBack";
-import CodeBlock from "../../components/Code";
-import BoopButton from "../../components/BoopButton";
+import Title from "@/home-components/Title";
+import GoBack from "@/home-components/GoBack";
+import CodeBlock from "@/home-components/Code";
+import BoopButton from "@/home-components/BoopButton";
 
 interface CustomComponents {
   [key: string]: React.ComponentType<any>;

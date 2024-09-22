@@ -1,5 +1,5 @@
 import React from "react";
-import Project from "../components/Project";
+import Project from "@/home-components/Project";
 const ProjectsPage: React.FC = () => {
   return (
     <div>

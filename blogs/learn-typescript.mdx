@@ -77,14 +77,14 @@ let tupleArray: [string, number][] = [
   ['a', 1],
   ['b', 2]
 ];
-`} language="typescript"/>
+`} language="typescript" filename="types.ts"/>
 
 ## Union
 <CodeBlock code ={`
 let union: string | number = 'a';
 union = 1;
 
-`} language = 'ts'/>
+`} language = 'ts' filename="union.ts"/>
 
 
 ## Objects
@@ -100,7 +100,7 @@ const user: User = {
   age: 32
 };
 
-`} language = 'ts'/>
+`} language = 'ts' filename="objects.ts"/>
 <br/>
 
 
@@ -116,7 +116,7 @@ const subtract = (a: number, b: number): number => a - b;
 function log(message: string | number): void {
   console.log(message);
 }
-`} language ="ts"/>
+`} language ="ts" filename="functions.ts"/>
 
 <br/>
 
@@ -135,7 +135,7 @@ const user1: UserInterface = {
 };
 user1.age = 47;
 
-`} language="ts"/>
+`} language="ts" filename="Interfaces.ts"/>
 
 <br/>
 
@@ -152,7 +152,7 @@ class Person {
 }
 
 const person1 = new Person(1, 'Jack');
-`} language = "ts"/>
+`} language = "ts" filename="classes.ts"/>
 
 <br/>
 
@@ -163,7 +163,7 @@ let customerID: any = '123';
 let customerIDAsNumber = customerID as number;
 let customerIDAsNumber2 = <number>customerID;
 
-`} language= "ts"/>
+`} language= "ts" filename="typeAssertion.ts"/>
 
 
 ## Extending Classes (Subclasses)
@@ -181,7 +181,7 @@ class Employee extends Person {
 
 const employee1 = new Employee(1, 'James', 'Developer');
 
-`} language="ts"/>
+`} language="ts" filename="sublClass.ts"/>
 
 
 
@@ -201,7 +201,7 @@ function getId<T>(id: T): T {
 const numberId = getId<number>(1);
 const stringId = getId<string>('1');
 
-`} language ="ts"/>
+`} language ="ts" filename="generics.ts"/>
 
 ## Enums
 
@@ -213,7 +213,7 @@ enum Color {
 }
 
 let color: Color = Color.Blue; // 2
-`} language ="ts"/>
+`} language ="ts" filename="enum.ts"/>
 
 
 ## TypeScript Docs
@@ -239,7 +239,6 @@ type Username = Pick<User, 'name' | 'lastName'>;
 
 type UserWithoutId = Omit<User, 'id'>;
 
-`} language ="ts"/>
+`} language ="ts" filename="utilityTy.ts"/>
 
 ---
-

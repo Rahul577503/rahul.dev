@@ -1,5 +1,5 @@
 import React from "react";
-import BlogPage, { fetchBlogs } from "../components/Blog";
+import BlogPage, { fetchBlogs } from "@/home-components/Blog";
 const Blog = async () => {
   const blogs = await fetchBlogs();
 

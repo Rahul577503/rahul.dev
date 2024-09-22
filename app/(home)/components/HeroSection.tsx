@@ -1,8 +1,7 @@
 import React from "react";
-import Image from "next/legacy/image";
-import Profile from "@/public/img/me.jpg";
-import { MovingBorderButton } from "@/components/ui/moving-border";
+import Image from "next/image";
 import Button from "./Button";
+import { MovingBorderButton } from "@/components/ui/moving-border";
 
 const HeroSection = () => {
   return (
@@ -33,11 +32,11 @@ const HeroSection = () => {
           </MovingBorderButton>
         </div>
       </div>
-      <div className="lg:w-1/2 flex justify-center  lg:mt-0 relative">
+      <div className="lg:w-1/2 flex justify-center lg:mt-0 relative">
         <div className="w-40 h-52 md:w-48 md:h-48 lg:w-64 lg:h-64 xl:w-72 xl:h-80 relative">
           <div className="glow-indigo absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 glow"></div>
           <Image
-            src={Profile}
+            src="/img/me.jpg"
             alt="my-image"
             layout="fill"
             objectFit="cover"
