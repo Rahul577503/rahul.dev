@@ -1,10 +1,9 @@
-// app/home-components/Blog.tsx
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import Link from "next/link";
 
-interface FrontMatter {
+export interface FrontMatter {
   title: string;
   date: string;
   description: string;
@@ -63,7 +62,19 @@ export default function BlogPage({ blogs = [], limit }: BlogPageProps) {
   );
 }
 
-export async function fetchBlogs() {
+function isValidFrontMatter(data: any): data is FrontMatter {
+  return (
+    data &&
+    typeof data.title === "string" &&
+    typeof data.date === "string" &&
+    typeof data.description === "string" &&
+    typeof data.image === "string"
+  );
+}
+
+export async function fetchBlogs(): Promise<
+  { meta: FrontMatter; slug: string }[]
+> {
   try {
     const blogDir = path.join(process.cwd(), "blogs");
     if (!fs.existsSync(blogDir)) {
@@ -78,13 +89,24 @@ export async function fetchBlogs() {
           path.join(blogDir, filename),
           "utf-8",
         );
-        const { data } = matter(fileContent) as { data: FrontMatter };
+        const { data } = matter(fileContent);
+
+        // Validate front matter
+        if (!isValidFrontMatter(data)) {
+          console.warn(
+            `Invalid front matter in ${filename}. Expected title, date, description, and image.`,
+          );
+          return null;
+        }
 
         return {
           meta: data,
           slug: filename.replace(".mdx", ""),
         };
       })
+      .filter(
+        (blog): blog is { meta: FrontMatter; slug: string } => blog !== null,
+      ) // Remove invalid blogs
       .sort(
         (a, b) =>
           new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),

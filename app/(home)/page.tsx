@@ -1,6 +1,6 @@
 import HeroSection from "@/home-components/HeroSection";
-import BlogPage, { fetchBlogs } from "@/home-components/Blog";
-import { Suspense } from "react"; // For loading states
+import BlogPage, { fetchBlogs, FrontMatter } from "@/home-components/Blog";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "Rahul Maurya - Full Stack Developer Portfolio",
@@ -9,13 +9,13 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  // Fetch blogs with error handling
-  let blogs;
+  let blogs: { meta: FrontMatter; slug: string }[] = [];
+
   try {
     blogs = await fetchBlogs();
   } catch (error) {
     console.error("Error fetching blogs:", error);
-    blogs = []; // Fallback to empty array if fetch fails
+    blogs = []; // Ensure fallback remains an empty array
   }
 
   return (
@@ -36,4 +36,4 @@ export default async function HomePage() {
   );
 }
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 3600;

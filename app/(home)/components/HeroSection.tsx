@@ -43,10 +43,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <Button
-            aria-label="View projects or contact"
-            className="p-3 font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
-          />
+          <Button aria-label="View projects or contact" />
           <MovingBorderButton
             borderRadius="0.5rem"
             className="p-3 font-semibold hover:bg-gray-900 transition-colors"
