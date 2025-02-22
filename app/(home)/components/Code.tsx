@@ -6,7 +6,7 @@ import "prismjs/components/prism-jsx";
 import "prismjs/components/prism-typescript";
 import "prismjs/components/prism-bash";
 import "prismjs/components/prism-json";
-import "prismjs/themes/prism-dark.css";
+import "prismjs/themes/prism-okaidia.css";
 import DOMPurify from "isomorphic-dompurify";
 import { FaCopy, FaSearchPlus, FaSearchMinus } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 interface CodeBlockProps {
   code: string;
-  language: string;
+  language?: string; // Made optional
   filename?: string;
   lineNumbers?: boolean;
   highlightLines?: number[];
@@ -22,7 +22,7 @@ interface CodeBlockProps {
 
 const CodeBlock: React.FC<CodeBlockProps> = ({
   code,
-  language,
+  language = "markup", // Default value if language is undefined
   filename,
   lineNumbers = true,
   highlightLines = [],
@@ -41,9 +41,11 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       css: "css",
       bash: "bash",
       json: "json",
+      java: "java",
     };
 
-    const lang = languageMap[language.toLowerCase()] || "markup";
+    // Use the language if provided, otherwise fallback to "markup"
+    const lang = languageMap[(language || "").toLowerCase()] || "markup";
     if (!Prism.languages[lang]) {
       return DOMPurify.sanitize(code);
     }
@@ -78,7 +80,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             <span className="w-3 h-3 rounded-full bg-yellow-500" />
             <span className="w-3 h-3 rounded-full bg-green-500" />
           </div>
-          <span className="ml-4 text-sm text-gray-300 truncate font-mono">
+          <span className="ml-4 text-sm text-gray-300 truncate font-ibm-plex-mono">
             {filename}
           </span>
         </div>
@@ -117,29 +119,31 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       <div className="relative overflow-x-auto">
         <pre
           className={cn(
-            "p-4 leading-relaxed",
-            lineNumbers && "pl-14",
+            "p-4 font-ibm-plex-mono",
+            lineNumbers && "pl-12",
             "scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700",
           )}
-          style={{ fontSize: `${fontSize}px` }}
+          style={{ fontSize: `${fontSize}px`, lineHeight: "1.5" }}
         >
           {lineNumbers && (
-            <div className="absolute left-0 top-0 bottom-0 w-12 bg-[#1e1e1e]/50 text-gray-400 text-right pr-4 py-4 select-none border-r border-gray-600">
+            <div className="absolute left-0 top-0 h-full w-10 bg-[#1e1e1e]/50 text-gray-400 text-right pr-2 py-4 select-none border-r border-gray-600 font-ibm-plex-mono">
               {codeLines.map((_, i) => (
                 <div
                   key={i}
                   className={cn(
-                    "leading-relaxed",
+                    "leading-[1.5]",
                     highlightLines.includes(i + 1) && "text-yellow-300",
                   )}
+                  style={{ height: `${fontSize * 1.5}px` }}
                 >
-                  {i + 0}
+                  {i + 1}
                 </div>
               ))}
             </div>
           )}
           <code
-            className={cn("block language-" + language, lineNumbers && "ml-10")}
+            className={cn("block language-" + language, lineNumbers && "ml-6")}
+            style={{ lineHeight: "1.5" }}
             dangerouslySetInnerHTML={{ __html: highlightedCode }}
           />
         </pre>
@@ -151,7 +155,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute top-14 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-gray-800 text-yellow-300 text-sm rounded"
+            className="absolute top-14 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-gray-800 text-yellow-300 text-sm rounded font-ibm-plex-mono"
           >
             Copied!
           </motion.div>

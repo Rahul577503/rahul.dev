@@ -10,7 +10,6 @@ import {
   SiGnometerminal,
 } from "react-icons/si";
 import { BsFillTerminalFill } from "react-icons/bs";
-
 import { FaRegEnvelope } from "react-icons/fa";
 import { MdOutlineArticle } from "react-icons/md";
 
@@ -23,22 +22,23 @@ const aboutMeContent: Section = {
   title: "About Me",
   content: (
     <>
-      <p className="text-lg text-gray-100">
-        Hey there! I’m Rahul, a passionate full-stack developer dedicated to
-        crafting exceptional digital experiences. With a knack for both frontend
-        and backend development, I specialize in designing sleek, intuitive
-        interfaces and building robust, scalable systems.
+      <p className="text-lg text-gray-100 leading-relaxed">
+        Hey there! I’m Rahul, a passionate Software Engineer dedicated to
+        crafting exceptional digital solutions. With expertise spanning frontend
+        and backend development, databases, and business logic, I specialize in
+        designing intuitive interfaces, building robust systems, and optimizing
+        business workflows for scalability and performance.
         <br />
         <br />
-        Since I first dipped my toes into coding, I’ve been driven by a desire
-        to push the boundaries of what’s possible and solve complex problems
-        with innovative solutions. Whether {"it's"} creating engaging user
-        experiences or optimizing server-side performance, I’m always up for a
-        new challenge.
+        Since starting my journey in coding, I’ve been driven by a curiosity to
+        push boundaries and solve complex problems with innovative solutions.
+        Whether it’s creating engaging user experiences, managing databases, or
+        streamlining business processes, I thrive on challenges that drive
+        impactful results.
         <br />
         <br />
         This space is where I share my journey, including my latest projects,
-        tutorials, and insights into the tech world. Here, {"you'll"} find
+        tutorials, and insights into the tech world. Here, you’ll find
         everything from personal reflections to detailed technical articles and
         showcases of my open-source contributions.
         <br />
@@ -54,9 +54,9 @@ const aboutMeContent: Section = {
         reach out at{" "}
         <a
           href="mailto:rahulmaurya109626@gmail.com"
-          className="text-yellow-400 hover:underline"
+          className="text-yellow-400 hover:underline transition-colors duration-200"
         >
-          Mail
+          rahulmaurya109626@gmail.com
         </a>
         . I’m always excited to collaborate, answer questions, or discuss new
         ideas. Let’s bring your innovative visions to life together!
@@ -64,49 +64,68 @@ const aboutMeContent: Section = {
     </>
   ),
 };
-
 const contactContent: Section = {
   title: "Contact",
   content: (
     <>
-      <div className="flex items-center space-x-4">
-        <FaRegEnvelope className="text-2xl text-gray-600" />
-        <p className="text-lg text-gray-100">
-          Email:rahulmaurya109626@gmail.com
-        </p>
-      </div>
-      <div className="flex items-center space-x-4 mt-4">
-        <SiGithub className="text-2xl text-gray-600" />
-        <a
-          href="https://Rahul577503.com/"
-          className="text-lg text-gray-100"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          GitHub
-        </a>
-      </div>
-      <div className="flex items-center space-x-4 mt-4">
-        <SiTwitter className="text-2xl text-gray-600" />
-        <a
-          href="https://twitter.com/RahulMa09588359"
-          className="text-lg text-gray-100"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Twitter
-        </a>
-      </div>
-      <div className="flex items-center space-x-4 mt-4">
-        <SiLinkedin className="text-2xl text-gray-600" />
-        <a
-          href="https://www.linkedin.com/in/rahul-maurya-6abb491b8"
-          className="text-lg text-gray-100"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Twitter
-        </a>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Email */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg hover:bg-gray-700 transition-all duration-200">
+          <div className="flex items-center space-x-4">
+            <FaRegEnvelope className="text-2xl text-yellow-400" />
+            <a
+              href="mailto:rahulmaurya109626@gmail.com"
+              className="text-lg text-gray-100 hover:text-yellow-300 transition-colors duration-200"
+            >
+              rahulmaurya109626@gmail.com
+            </a>
+          </div>
+        </div>
+
+        {/* GitHub */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg hover:bg-gray-700 transition-all duration-200">
+          <div className="flex items-center space-x-4">
+            <SiGithub className="text-2xl text-yellow-400" />
+            <a
+              href="https://github.com/Rahul577503"
+              className="text-lg text-gray-100 hover:text-yellow-300 transition-colors duration-200"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
+
+        {/* Twitter */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg hover:bg-gray-700 transition-all duration-200">
+          <div className="flex items-center space-x-4">
+            <SiTwitter className="text-2xl text-yellow-400" />
+            <a
+              href="https://twitter.com/RahulMa09588359"
+              className="text-lg text-gray-100 hover:text-yellow-300 transition-colors duration-200"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Twitter
+            </a>
+          </div>
+        </div>
+
+        {/* LinkedIn */}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg hover:bg-gray-700 transition-all duration-200">
+          <div className="flex items-center space-x-4">
+            <SiLinkedin className="text-2xl text-yellow-400" />
+            <a
+              href="https://www.linkedin.com/in/rahul-maurya-6abb491b8"
+              className="text-lg text-gray-100 hover:text-yellow-300 transition-colors duration-200"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LinkedIn
+            </a>
+          </div>
+        </div>
       </div>
     </>
   ),
@@ -116,73 +135,79 @@ const currentActivitiesContent: Section = {
   title: "What I'm Doing Now",
   content: (
     <>
-      <p className="text-lg text-gray-100">
-        <strong>Updated September 8th, 2024</strong>
+      <p className="text-lg text-gray-100 font-semibold mb-2">
+        Updated September 8th, 2024
       </p>
-      <p className="text-lg text-gray-100">
-        Currently working as a Software Developer Intern at
+      <p className="text-lg text-gray-100 mb-4">
+        Currently thriving as an Associate Software Engineer at{" "}
         <a
           href="https://storemygoods.in"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-yellow-400 hover:underline"
+          className="text-yellow-400 hover:underline transition-colors duration-200"
         >
           Store My Goods
         </a>
-        , where I’m helping build efficient solutions for logistics and storage
-        management.
+        , where I’m driving impactful solutions in logistics and storage
+        management. Since my promotion on September 1, 2024, I’ve been managing
+        frontend and backend development, optimizing databases, and designing
+        business flows and logic to enhance operational efficiency.
       </p>
-      <ul className="list-disc pl-5 text-lg text-gray-100 mt-3">
+      <ul className="list-disc pl-5 text-lg text-gray-100 space-y-2">
         <li>
-          Experimenting with cutting-edge technologies to streamline operations.
+          Leveraging cutting-edge technologies to streamline operations and
+          improve system performance.
         </li>
         <li>
-          Trying to build a better fitness routine (and succeeding...
-          sometimes!).
+          Balancing professional growth with personal fitness goals—progressing
+          steadily (most of the time!).
         </li>
         <li>
-          Constantly tweaking and optimizing this website for performance and
-          style.
+          Continuously refining this website for better performance, usability,
+          and aesthetics.
         </li>
         <li>
-          Finding creative ways to build my dream projects in my spare time.
+          Exploring innovative side projects to fuel my creativity and technical
+          skills in my spare time.
         </li>
       </ul>
     </>
   ),
 };
+
 const hardWare: Section = {
-  title: "HardWare",
+  title: "Hardware",
   content: (
     <>
-      <ul className="list-disc pl-5 text-lg text-gray-100">
-        <li>Coding PC:Dell Lattitude 8GB RAM</li>
-        <li>OS:Linux(Ubuntu v23.10)</li>
+      <ul className="list-disc pl-5 text-lg text-gray-100 space-y-2">
+        <li>Coding PC: Dell Latitude 8GB RAM</li>
+        <li>OS: Linux (Ubuntu v23.10)</li>
       </ul>
     </>
   ),
 };
+
 const toolsContent: Section = {
   title: "Tools",
   content: (
     <>
-      <h3 className="text-2xl font-semibold mb-2">Software</h3>
+      <h3 className="text-2xl font-semibold text-gray-100 mb-4">Software</h3>
       <p className="text-lg text-gray-100 mb-4">
-        This website is hosted on Vercel and uses the Next js framework.
+        This website is hosted on Vercel and built using the Next.js framework.
       </p>
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4 mb-3">
         <SiZedindustries className="text-2xl text-gray-600" />
         <p className="text-lg text-gray-100">
           Coding: Zed Code Editor with XCode High Contrast Dark
         </p>
       </div>
-      <div className="flex items-center space-x-4 mt-4">
+      <div className="flex items-center space-x-4 mb-3">
         <BsFillTerminalFill className="text-2xl text-gray-600" />
         <p className="text-lg text-gray-100">
           Terminal:{" "}
           <a
             href="https://hyper.is/"
-            className="text-yellow-400 underline"
+            className="text-yellow-400 hover:underline transition-colors duration-200"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -191,7 +216,7 @@ const toolsContent: Section = {
           with{" "}
           <a
             href="https://ohmyz.sh/"
-            className="text-yellow-400 underline"
+            className="text-yellow-400 hover:underline transition-colors duration-200"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -199,39 +224,41 @@ const toolsContent: Section = {
           </a>
         </p>
       </div>
-      <div className="flex items-center space-x-4 mt-4">
+      <div className="flex items-center space-x-4">
         <MdOutlineArticle className="text-2xl text-gray-600" />
         <p className="text-lg text-gray-100">
           Notes:{" "}
           <a
             href="https://obsidian.md/"
-            className="text-yellow-400 underline"
+            className="text-yellow-400 hover:underline transition-colors duration-200"
             target="_blank"
             rel="noopener noreferrer"
           >
             Obsidian
-          </a>{" "}
+          </a>
         </p>
       </div>
     </>
   ),
 };
 
-// Combine all sections into an array
 const sections: Section[] = [
   aboutMeContent,
-  contactContent,
   currentActivitiesContent,
   toolsContent,
   hardWare,
+  contactContent,
 ];
 
 const AboutPage: React.FC = () => {
   return (
-    <div className="max-w-screen-lg mx-auto p-5">
+    <div className="">
       {sections.map((section, index) => (
-        <section key={index} className="py-10">
-          <h1 className="text-4xl text-yellow-500 font-bold mb-5">
+        <section
+          key={index}
+          className="py-8 border-b border-gray-800 last:border-b-0"
+        >
+          <h1 className="text-3xl text-yellow-500 font-bold mb-6 tracking-wide">
             {section.title}
           </h1>
           {section.content}

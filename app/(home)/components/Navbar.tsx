@@ -62,10 +62,10 @@ const Navbar = () => {
         <div className="flex justify-between items-center w-full">
           <motion.h1
             className="text-xl md:text-2xl lg:text-2xl font-bold underline underline-offset-8 decoration-amber-400 -rotate-2 text-white hover:scale-105 transition-transform"
-            whileHover={{ scale: 1.05, rotate: -5 }} // Subtle hover animation
+            whileHover={{ scale: 1.05, rotate: -5 }}
           >
             <Link href="/" aria-label="Home">
-              Rk 🧑‍💻
+              Rahul 🧑‍💻
             </Link>
           </motion.h1>
           <button
