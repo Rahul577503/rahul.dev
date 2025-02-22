@@ -157,10 +157,10 @@ body {
 }
 
 .glow-indigo {
-    width: 200px;
+    width: 100px;
     height: 200px;
     border-radius: 50%;
     filter: blur(110px);
-    background-image: linear-gradient(deeppink, red, coral, gold, white);
+    /* background-image: linear-gradient(deeppink, red, coral, gold, white); */
     transform: scale(1.5) translateX(5%) rotate(30deg);
 }

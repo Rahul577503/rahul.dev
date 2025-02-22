@@ -1,52 +1,88 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 import Button from "./Button";
 import { MovingBorderButton } from "@/components/ui/moving-border";
+import { motion } from "framer-motion";
 
-const HeroSection = () => {
+export default function HeroSection() {
   return (
-    <div className="min-h-screen w-full md:max-w-screen lg:max-w-screen-lg mx-auto px-4 flex flex-col-reverse lg:flex-row items-center justify-between gap-4 lg:gap-8">
-      <div className="lg:w-1/2 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-4">
-        <h1 className="text-xl md:text-2xl lg:text-2xl xl:text-3xl font-bold text-white">
-          <span className="inline-block">Hey!</span>{" "}
-          <span className="underline text-xl md:text-xl lg:text-2xl xl:text-3xl underline-offset-8 decoration-amber-400">
-            {"I'm Rahul"}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="w-full max-w-screen-xl mx-auto flex flex-col-reverse lg:flex-row items-center justify-between gap-8  overflow-x-hidden"
+    >
+      <div className="lg:w-1/2 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-6">
+        <motion.h1
+          className="text-2xl md:text-3xl lg:text-4xl font-bold text-white"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <span>Hey!</span>{" "}
+          <span className="underline underline-offset-8 decoration-amber-400">
+            I'm Rahul
           </span>
-        </h1>
+        </motion.h1>
 
-        <p className="text-base md:text-lg lg:text-xl xl:text-xl text-gray-300">
-          {"I'm"} a dynamic full-stack developer passionate about crafting
-          captivating digital experiences. With expertise in frontend and
-          backend development, I specialize in creating sleek interfaces and
-          scalable systems. Fueled by innovation and a love for problem-solving,
-          I thrive on pushing the boundaries of {"what's"} possible. {"Let's"}
-          collaborate and bring your vision to life!
-        </p>
-        <div className="flex flex-col lg:flex-row items-center justify-center lg:justify-start gap-4 mt-5">
-          <Button />
+        <motion.p
+          className="text-base md:text-lg text-gray-300 max-w-md"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
+          I'm a dynamic full-stack developer passionate about crafting
+          captivating digital experiences with expertise in both frontend and
+          backend development.
+        </motion.p>
+
+        <motion.div
+          className="flex flex-col sm:flex-row items-center gap-4 mt-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+        >
+          <Button
+            aria-label="View projects or contact"
+            className="p-3 font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+          />
           <MovingBorderButton
             borderRadius="0.5rem"
-            className="p-3 md:p-3 lg:p-4 font-semibold"
+            className="p-3 font-semibold hover:bg-gray-900 transition-colors"
+            aria-label="Download resume"
           >
-            Download Resume
+            <a
+              href="/resume.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white"
+            >
+              Download Resume
+            </a>
           </MovingBorderButton>
-        </div>
+        </motion.div>
       </div>
-      <div className="lg:w-1/2 flex justify-center lg:mt-0 relative">
-        <div className="w-40 h-52 md:w-48 md:h-48 lg:w-64 lg:h-64 xl:w-72 xl:h-80 relative">
-          <div className="glow-indigo absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-0 glow"></div>
+
+      <div className="lg:w-1/2 flex justify-center relative">
+        <div className="relative w-64 h-80 md:w-72 md:h-96">
+          <motion.div
+            className="glow-indigo absolute inset-0 z-0 glow"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 0.5 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
           <Image
             src="/img/me.jpg"
-            alt="my-image"
-            layout="fill"
-            objectFit="cover"
+            alt="Rahul Maurya - Full Stack Developer"
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
             priority
-            className="rounded-2xl relative backdrop-blur-3xl transition-opacity duration-300 hover:opacity-80"
+            className="rounded-2xl object-cover relative hover:opacity-80 transition-opacity"
+            onError={(e) => console.error("Image load error:", e)}
           />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
-};
-
-export default HeroSection;
+}

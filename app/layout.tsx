@@ -6,36 +6,81 @@ import "@code-hike/mdx/dist/index.css";
 import Layout from "@/home-components/Layout.tsx/Layout";
 
 const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "700"],
   display: "swap",
+  preload: true,
+  variable: "--font-ibm-plex-mono",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://rahulmaurya.vercel.app/"),
   title: {
-    template: "%s | Rahul Maurya",
-    default: "Rahul Maurya",
+    template: "%s | Rahul Maurya - Full Stack Developer",
+    default: "Rahul Maurya - Full Stack Developer Portfolio",
   },
-  authors: [{ name: "Rahul Maurya", url: "https://rahulmaurya.vercel.app/" }],
+  authors: [
+    {
+      name: "Rahul Maurya",
+      url: "https://rahulmaurya.vercel.app/",
+    },
+  ],
   description:
-    "I'm Rahul, a versatile full-stack developer, weaving digital wonders from both frontend and backend realms. Embracing innovation, I craft captivating online experiences with precision and passion.",
+    "Rahul Maurya is a skilled full-stack developer creating innovative web solutions. Explore my portfolio showcasing frontend and backend expertise.",
+  keywords: [
+    "Rahul Maurya",
+    "full stack developer",
+    "web development portfolio",
+    "frontend developer",
+    "backend developer",
+    "next.js developer",
+    "software engineer",
+  ],
   openGraph: {
-    title: "Rahul Maurya - Portfolio",
-    description: "I'm Rahul, a versatile full-stack developer...",
+    title: "Rahul Maurya - Full Stack Developer Portfolio",
+    description:
+      "Portfolio of Rahul Maurya, a full-stack developer crafting innovative web experiences with expertise in frontend and backend technologies.",
     url: "https://rahulmaurya.vercel.app/",
-    siteName: "Rahul Maurya",
-    images: ["https://rahulmaurya.vercel.app/img/me.jpg"],
+    siteName: "Rahul Maurya Portfolio",
+    images: [
+      {
+        url: "https://rahulmaurya.vercel.app/img/me.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Rahul Maurya - Full Stack Developer",
+      },
+    ],
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     site: "@your_twitter_handle",
-    title: "Rahul Maurya - Portfolio",
-    description: "I'm Rahul, a versatile full-stack developer...",
-    images: ["https://rahulmaurya.vercel.app/img/me.jpg"],
+    creator: "@your_twitter_handle",
+    title: "Rahul Maurya - Full Stack Developer Portfolio",
+    description:
+      "Portfolio of Rahul Maurya, showcasing full-stack development projects and expertise.",
+    images: [
+      {
+        url: "https://rahulmaurya.vercel.app/img/me.jpg",
+        alt: "Rahul Maurya - Full Stack Developer",
+      },
+    ],
   },
-  keywords: ["Rahul Maurya portfolio", "full-stack developer"],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://rahulmaurya.vercel.app/",
+  },
 };
 
 export default function RootLayout({
@@ -44,9 +89,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
+      <head>
+        <link
+          rel="preconnect"
+          href="https://fonts.googleapis.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body
-        className={`${ibmPlexMono.className} bg-black text-white antialiased relative`}
+        className={`${ibmPlexMono.className} bg-black text-white antialiased min-h-screen`}
       >
         <ThemeProvider
           attribute="class"
@@ -60,3 +113,10 @@ export default function RootLayout({
     </html>
   );
 }
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#000000",
+};
