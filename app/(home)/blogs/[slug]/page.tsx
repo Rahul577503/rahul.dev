@@ -10,7 +10,10 @@ import CodeBlock from "@/home-components/Code";
 import BoopButton from "@/home-components/BoopButton";
 import Pre from "@/home-components/Pre";
 
+import Share from "@/home-components/Share";
+
 interface CustomComponents {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: React.ComponentType<any>;
 }
 
@@ -38,7 +41,7 @@ export async function generateStaticParams() {
 function getPost({ slug }: { slug: string }) {
   try {
     const filePath = path.join("blogs", `${slug}.mdx`);
-    
+
     if (!fs.existsSync(filePath)) {
       return null;
     }
@@ -57,7 +60,11 @@ function getPost({ slug }: { slug: string }) {
   }
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const post = getPost({ slug });
 
@@ -67,18 +74,37 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
+  const url = `https://rahul.dev/blogs/${slug}`;
+
   return {
     title: post.frontMatter.title,
     description: post.frontMatter.description || "",
     openGraph: {
       title: post.frontMatter.title,
       description: post.frontMatter.description || "",
+      url,
+      type: "article",
+      authors: ["Rahul Maurya"],
+      publishedTime: post.frontMatter.date,
       images: post.frontMatter.image ? [{ url: post.frontMatter.image }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.frontMatter.title,
+      description: post.frontMatter.description || "",
+      images: post.frontMatter.image ? [post.frontMatter.image] : [],
+    },
+    alternates: {
+      canonical: url,
     },
   };
 }
 
-export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const post = getPost({ slug });
 
@@ -99,13 +125,13 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             </h1>
             <GoBack />
           </div>
-          
+
           {frontMatter.date && (
             <time className="block text-sm text-zinc-500 dark:text-zinc-500 font-mono">
-              {new Date(frontMatter.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+              {new Date(frontMatter.date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })}
             </time>
           )}
@@ -132,7 +158,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         )}
 
         {/* MDX Content */}
-        <div className="prose prose-base sm:prose-lg prose-zinc dark:prose-invert max-w-none overflow-hidden
+        <div
+          className="prose prose-base sm:prose-lg prose-zinc dark:prose-invert max-w-none overflow-hidden
           prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-zinc-900 dark:prose-headings:text-white prose-headings:scroll-mt-24
           prose-h1:text-3xl sm:prose-h1:text-4xl prose-h1:mb-4
           prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:mt-10 sm:prose-h2:mt-12 prose-h2:mb-4
@@ -149,9 +176,12 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           prose-img:rounded-xl prose-img:shadow-lg
           [&_pre]:!p-0 [&_pre]:!m-0 [&_pre]:!bg-transparent [&_pre]:!overflow-x-auto
           [&_pre_code]:!block [&_pre_code]:!p-3 [&_pre_code]:sm:[&_pre_code]:!p-4 [&_pre_code]:!overflow-x-auto [&_pre_code]:!text-xs [&_pre_code]:sm:[&_pre_code]:!text-sm [&_pre_code]:!leading-relaxed [&_pre_code]:!whitespace-pre [&_pre_code]:!break-normal
-        ">
+        "
+        >
           <MDXRemote source={content} components={components} />
         </div>
+
+        <Share title={frontMatter.title} slug={slug} />
       </article>
     </div>
   );

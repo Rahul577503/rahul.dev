@@ -28,13 +28,13 @@ const BlogCard: React.FC<BlogCardProps> = ({ meta, slug, index }) => (
     transition={{ delay: index * 0.05 }}
     className="group relative"
   >
-    <Link 
-      href={`/blogs/${slug}`} 
+    <Link
+      href={`/blogs/${slug}`}
       className="block p-4 sm:p-6 rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-zinc-900/20 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-700/50 transition-all duration-300"
     >
       {/* Subtle gradient on hover */}
       <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-amber-500/0 to-orange-500/0 group-hover:from-amber-500/5 group-hover:to-orange-500/5 transition-all duration-500 pointer-events-none" />
-      
+
       <div className="relative space-y-2 sm:space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
@@ -43,10 +43,10 @@ const BlogCard: React.FC<BlogCardProps> = ({ meta, slug, index }) => (
           </h3>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <time className="text-xs font-mono text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-400 transition-colors hidden sm:block">
-              {new Date(meta.date).toLocaleDateString('en-US', { 
-                month: 'short', 
-                day: 'numeric',
-                year: 'numeric'
+              {new Date(meta.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
               })}
             </time>
             <FiArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 dark:text-zinc-600 group-hover:text-amber-500 dark:group-hover:text-amber-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
@@ -55,10 +55,10 @@ const BlogCard: React.FC<BlogCardProps> = ({ meta, slug, index }) => (
 
         {/* Mobile date */}
         <time className="block sm:hidden text-xs font-mono text-zinc-500 dark:text-zinc-500">
-          {new Date(meta.date).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric',
-            year: 'numeric'
+          {new Date(meta.date).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
           })}
         </time>
 
@@ -71,8 +71,8 @@ const BlogCard: React.FC<BlogCardProps> = ({ meta, slug, index }) => (
         {meta.tags && meta.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 sm:gap-2 pt-1">
             {meta.tags.slice(0, 3).map((tag) => (
-              <span 
-                key={tag} 
+              <span
+                key={tag}
                 className="text-xs font-medium text-zinc-500 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border border-zinc-200 dark:border-zinc-800/50 group-hover:border-zinc-300 dark:group-hover:border-zinc-700/50 transition-colors"
               >
                 {tag}
@@ -96,7 +96,8 @@ export default function BlogList({ blogs = [], limit }: BlogListProps) {
   const filteredBlogs = blogs.filter((blog) => {
     const query = searchQuery.toLowerCase();
     const titleMatch = blog.meta.title?.toLowerCase().includes(query) || false;
-    const descMatch = blog.meta.description?.toLowerCase().includes(query) || false;
+    const descMatch =
+      blog.meta.description?.toLowerCase().includes(query) || false;
     return titleMatch || descMatch;
   });
 
@@ -107,12 +108,14 @@ export default function BlogList({ blogs = [], limit }: BlogListProps) {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">Writings</h2>
+          <h2 className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+            Writings
+          </h2>
           <p className="text-zinc-500 dark:text-zinc-500 text-sm mt-1">
-            {blogs.length} {blogs.length === 1 ? 'article' : 'articles'}
+            {blogs.length} {blogs.length === 1 ? "article" : "articles"}
           </p>
         </div>
-        
+
         {/* Search Input */}
         <div className="relative w-full sm:w-72">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
@@ -131,17 +134,17 @@ export default function BlogList({ blogs = [], limit }: BlogListProps) {
         <AnimatePresence mode="popLayout">
           {displayedBlogs.length > 0 ? (
             displayedBlogs.map((blog, index) => (
-              <BlogCard 
-                key={blog.slug} 
-                meta={blog.meta} 
+              <BlogCard
+                key={blog.slug}
+                meta={blog.meta}
                 slug={blog.slug}
                 index={index}
               />
             ))
           ) : (
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="text-center py-16 px-4"
             >
@@ -149,7 +152,10 @@ export default function BlogList({ blogs = [], limit }: BlogListProps) {
                 <FiSearch className="w-6 h-6 text-zinc-400 dark:text-zinc-600" />
               </div>
               <p className="text-zinc-500 text-sm">
-                No articles found matching <span className="text-zinc-700 dark:text-zinc-400 font-medium">"{searchQuery}"</span>
+                No articles found matching{" "}
+                <span className="text-zinc-700 dark:text-zinc-400 font-medium">
+                  &quot;{searchQuery}&quot;
+                </span>
               </p>
             </motion.div>
           )}

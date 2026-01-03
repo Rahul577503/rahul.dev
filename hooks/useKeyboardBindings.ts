@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 const useKeyboardBindings = (keyHandlers: Record<string, () => void>) => {
   useEffect(() => {
@@ -9,10 +9,10 @@ const useKeyboardBindings = (keyHandlers: Record<string, () => void>) => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [keyHandlers]);
 };

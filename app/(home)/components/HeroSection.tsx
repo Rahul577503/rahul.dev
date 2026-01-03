@@ -22,7 +22,7 @@ export default function HeroSection() {
         >
           <span>Hey!</span>{" "}
           <span className="underline underline-offset-8 decoration-amber-400">
-            I'm Rahul
+            I&apos;m Rahul
           </span>
         </motion.h1>
 
@@ -32,7 +32,7 @@ export default function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
-          I'm a dynamic full-stack developer passionate about crafting
+          I&apos;m a dynamic full-stack developer passionate about crafting
           captivating digital experiences with expertise in both frontend and
           backend development.
         </motion.p>

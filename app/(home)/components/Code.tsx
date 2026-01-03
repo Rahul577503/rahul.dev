@@ -12,7 +12,6 @@ import "prismjs/components/prism-python";
 import "prismjs/components/prism-c";
 import "prismjs/components/prism-cpp";
 
-
 import { FaCopy, FaCheck, FaSearchPlus, FaSearchMinus } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
@@ -93,42 +92,42 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
             </span>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
-            <div className="flex bg-zinc-800/50 rounded-lg p-0.5 border border-zinc-700/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button
-                    onClick={handleZoomOut}
-                    className="p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 rounded-md transition-colors"
-                    aria-label="Zoom out"
-                >
-                    <FaSearchMinus className="w-3 h-3" />
-                </button>
-                <button
-                    onClick={handleZoomIn}
-                    className="p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 rounded-md transition-colors"
-                    aria-label="Zoom in"
-                >
-                    <FaSearchPlus className="w-3 h-3" />
-                </button>
-            </div>
-            
+          <div className="flex bg-zinc-800/50 rounded-lg p-0.5 border border-zinc-700/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button
+              onClick={handleZoomOut}
+              className="p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 rounded-md transition-colors"
+              aria-label="Zoom out"
+            >
+              <FaSearchMinus className="w-3 h-3" />
+            </button>
+            <button
+              onClick={handleZoomIn}
+              className="p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700 rounded-md transition-colors"
+              aria-label="Zoom in"
+            >
+              <FaSearchPlus className="w-3 h-3" />
+            </button>
+          </div>
+
+          <button
             onClick={handleCopy}
             className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 rounded-lg border border-zinc-700/50 transition-all text-xs font-medium"
             aria-label="Copy code"
-            >
+          >
             {copied ? (
-                <>
+              <>
                 <FaCheck className="w-3 h-3 text-green-400" />
                 <span className="text-green-400">Copied</span>
-                </>
+              </>
             ) : (
-                <>
+              <>
                 <FaCopy className="w-3 h-3" />
                 <span>Copy</span>
-                </>
+              </>
             )}
-            </button>
+          </button>
         </div>
       </div>
 
@@ -138,22 +137,23 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
           className={cn(
             "p-4 font-ibm-plex-mono text-sm leading-relaxed scrollbar-thin scrollbar-track-transparent scrollbar-thumb-zinc-600",
           )}
-          style={{ 
+          style={{
             fontSize: `${fontSize}px`,
-            paddingLeft: lineNumbers ? '4rem' : '1rem' 
+            paddingLeft: lineNumbers ? "4rem" : "1rem",
           }}
         >
           {lineNumbers && (
-            <div 
-                className="absolute left-0 top-0 bottom-0 w-12 bg-[#1e1e1e] border-r border-zinc-800/50 text-zinc-600 select-none flex flex-col items-end py-4 pr-3 gap-[1px] z-10"
-                style={{ fontSize: `${fontSize}px` }}
+            <div
+              className="absolute left-0 top-0 bottom-0 w-12 bg-[#1e1e1e] border-r border-zinc-800/50 text-zinc-600 select-none flex flex-col items-end py-4 pr-3 gap-[1px] z-10"
+              style={{ fontSize: `${fontSize}px` }}
             >
               {codeLines.map((_, i) => (
                 <div
                   key={i}
                   className={cn(
                     "text-xs leading-relaxed h-[1.5em] flex items-center justify-end w-full",
-                    highlightLines.includes(i + 1) && "text-yellow-500 font-bold"
+                    highlightLines.includes(i + 1) &&
+                      "text-yellow-500 font-bold",
                   )}
                 >
                   {i + 1}

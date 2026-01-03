@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "audit": "npm audit fix",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.tsx\" \"src/**/*.js\" \"src/**/*.jsx\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"src/**/*.tsx\" \"src/**/*.js\" \"src/**/*.jsx\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx}\""
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
@@ -43,6 +43,7 @@
     "autoprefixer": "^10.4.19",
     "eslint": "^9.39.2",
     "eslint-config-next": "^15.5.9",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "file-loader": "^6.2.0",
     "postcss": "^8.4.38",

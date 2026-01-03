@@ -20,6 +20,7 @@ export default function BlogPage({ blogs = [], limit }: BlogPageProps) {
   return <BlogList blogs={blogs} limit={limit} />;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isValidFrontMatter(data: any): data is FrontMatter {
   return (
     data &&
@@ -61,7 +62,7 @@ export async function fetchBlogs(): Promise<
       })
       .filter(
         (blog): blog is { meta: FrontMatter; slug: string } => blog !== null,
-      ) 
+      )
       .sort(
         (a, b) =>
           new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),

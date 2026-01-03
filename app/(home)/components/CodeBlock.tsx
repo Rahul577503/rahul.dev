@@ -1,9 +1,12 @@
-'use client'
-import React, { useEffect } from 'react';
-import Prism from 'prismjs'
-import 'prismjs/themes/prism-okaidia.css';
+"use client";
+import React, { useEffect } from "react";
+import Prism from "prismjs";
+import "prismjs/themes/prism-okaidia.css";
 
-const CodeBlock: React.FC<{ language: string; children: string }> = ({ language, children }) => {
+const CodeBlock: React.FC<{ language: string; children: string }> = ({
+  language,
+  children,
+}) => {
   useEffect(() => {
     Prism.highlightAll();
   }, []);

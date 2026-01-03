@@ -21,8 +21,8 @@ const Navbar = () => {
       <nav className="max-w-6xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="group flex items-center gap-2"
             aria-label="Home"
           >

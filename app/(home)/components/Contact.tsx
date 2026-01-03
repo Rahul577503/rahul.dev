@@ -10,7 +10,8 @@ const Contact = () => {
       />
       <div className="flex flex-col items-center gap-6 mt-10">
         <p className="text-gray-300 text-center max-w-md">
-          I'm currently looking for new opportunities. Whether you have a question or just want to say hi, my inbox is always open!
+          I&apos;m currently looking for new opportunities. Whether you have a
+          question or just want to say hi, my inbox is always open!
         </p>
         <Button text="Say Hello" href="mailto:rahulmaurya.dev@gmail.com" />
       </div>

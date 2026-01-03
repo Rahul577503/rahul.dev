@@ -1,8 +1,8 @@
-import React from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
-import { IconType } from 'react-icons';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
+import { IconType } from "react-icons";
+import { cn } from "@/lib/utils";
 
 export const HoverEffect = ({
   items,
@@ -14,12 +14,12 @@ export const HoverEffect = ({
   }[];
   className?: string;
 }) => {
-  let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
     <div
       className={cn(
-        `${className} grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 py-10`
+        `${className} grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10 py-10`,
       )}
     >
       {items.map((item, idx) => {
