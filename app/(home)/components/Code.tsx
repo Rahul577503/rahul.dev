@@ -11,8 +11,8 @@ import "prismjs/components/prism-java";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-c";
 import "prismjs/components/prism-cpp";
-import "prismjs/themes/prism-okaidia.css";
-import DOMPurify from "isomorphic-dompurify";
+
+
 import { FaCopy, FaCheck, FaSearchPlus, FaSearchMinus } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
@@ -55,11 +55,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 
     const lang = languageMap[(language || "").toLowerCase()] || "markup";
     if (!Prism.languages[lang]) {
-      return DOMPurify.sanitize(code);
+      return code;
     }
-    return DOMPurify.sanitize(
-      Prism.highlight(code.trim(), Prism.languages[lang], lang),
-    );
+    return Prism.highlight(code.trim(), Prism.languages[lang], lang);
   }, [code, language]);
 
   const codeLines = useMemo(() => code.trim().split("\n"), [code]);
