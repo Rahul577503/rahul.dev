@@ -25,12 +25,12 @@ export const metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://rahul.dev",
+    url: "https://rahulmaurya.vercel.app",
     title: "Rahul Maurya - Software Engineer",
     description: "Building scalable and performant digital experiences.",
     images: [
       {
-        url: "https://rahul.dev/img/me.jpg",
+        url: "https://rahulmaurya.vercel.app/img/me.jpg",
         width: 1200,
         height: 630,
         alt: "Rahul Maurya - Software Engineer",
@@ -41,10 +41,10 @@ export const metadata = {
     card: "summary_large_image",
     title: "Rahul Maurya - Software Engineer",
     description: "Building scalable and performant digital experiences.",
-    images: ["https://rahul.dev/img/me.jpg"],
+    images: ["https://rahulmaurya.vercel.app/img/me.jpg"],
   },
   alternates: {
-    canonical: "https://rahul.dev",
+    canonical: "https://rahulmaurya.vercel.app",
   },
 };
 
@@ -63,7 +63,7 @@ export default async function HomePage() {
       "@type": "Organization",
       name: "Store My Goods",
     },
-    url: "https://rahul.dev",
+    url: "https://rahulmaurya.vercel.app",
     sameAs: [
       "https://github.com/Rahul577503",
       "https://www.linkedin.com/in/rahul-maurya-6abb491b8",

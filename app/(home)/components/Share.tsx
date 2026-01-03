@@ -17,7 +17,7 @@ interface ShareProps {
 
 export default function Share({ title, slug }: ShareProps) {
   const [copied, setCopied] = useState(false);
-  const url = `https://rahul.dev/blogs/${slug}`;
+  const url = `https://rahulmaurya.vercel.app/blogs/${slug}`;
 
   const handleCopy = async () => {
     try {

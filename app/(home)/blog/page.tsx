@@ -17,11 +17,11 @@ export const metadata = {
     title: "Blog | Rahul Maurya",
     description:
       "Thoughts on software development, engineering, and technology.",
-    url: "https://rahul.dev/blog",
+    url: "https://rahulmaurya.vercel.app/blog",
     type: "website",
     images: [
       {
-        url: "https://rahul.dev/img/me.jpg",
+        url: "https://rahulmaurya.vercel.app/img/me.jpg",
         width: 1200,
         height: 630,
         alt: "Rahul Maurya Blog",
@@ -33,10 +33,10 @@ export const metadata = {
     title: "Blog | Rahul Maurya",
     description:
       "Thoughts on software development, engineering, and technology.",
-    images: ["https://rahul.dev/img/me.jpg"],
+    images: ["https://rahulmaurya.vercel.app/img/me.jpg"],
   },
   alternates: {
-    canonical: "https://rahul.dev/blog",
+    canonical: "https://rahulmaurya.vercel.app/blog",
   },
 };
 

@@ -74,7 +74,7 @@ export async function generateMetadata({
     };
   }
 
-  const url = `https://rahul.dev/blogs/${slug}`;
+  const url = `https://rahulmaurya.vercel.app/blogs/${slug}`;
 
   return {
     title: post.frontMatter.title,
