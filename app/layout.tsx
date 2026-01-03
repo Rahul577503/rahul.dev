@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import "@code-hike/mdx/dist/index.css";
+
 import Layout from "@/home-components/Layout.tsx/Layout";
 
 const ibmPlexMono = IBM_Plex_Mono({
@@ -99,11 +99,11 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body
-        className={`${ibmPlexMono.className} bg-black text-white antialiased min-h-screen`}
+        className={`${ibmPlexMono.className} bg-background text-foreground antialiased min-h-screen`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >

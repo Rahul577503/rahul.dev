@@ -1,152 +1,542 @@
 ---
-title: "Learn MDX"
-date: "2024-02-28"
-description: "MDX (Markdown + JSX)"
+title: "MDX Mastery: Complete Guide to Markdown + JSX"
+date: "2026-01-03"
+description: "Master MDX with this comprehensive guide covering syntax, components, advanced patterns, and best practices for building interactive documentation and blogs."
 image: "https://img.freepik.com/free-photo/flow-digital-information-data-channel_60438-4070.jpg?t=st=1709365171~exp=1709368771~hmac=a78423c4b7b7a5beadba08e4a8dee86d1d1e1b63de005cd44401bf4c40a0c52d&w=1800"
+tags: ["MDX", "Markdown", "React", "Documentation"]
 ---
 
-export const metadata = {
-  author: "Rahul Maurya",
-};
+# MDX Mastery: Complete Guide to Markdown + JSX
 
-![Docusaurus logo](/img/mdx.jpeg)
+_Published on January 3, 2026_
 
-# STYLIZE TEXT
+MDX is a powerful format that combines Markdown's simplicity with React's interactivity. Write documentation, blogs, and content with embedded components for a rich, interactive experience.
 
-**TABLES**
+---
 
-### Tables are a common extension of the official markdown definition (CommonMark). They can be formatted in quite a lot of ways:
+## What is MDX?
+
+**MDX = Markdown + JSX**
+
+```mdx
+# Hello World
+
+This is regular Markdown.
+
+<CustomComponent prop="value">
+  But you can also use React components!
+</CustomComponent>
+
+And back to Markdown.
+```
+
+**Why MDX?**:
+
+- ✅ Write content in Markdown
+- ✅ Embed React components
+- ✅ Import and use JavaScript
+- ✅ Type-safe with TypeScript
+- ✅ Perfect for docs and blogs
+
+---
+
+## Basic Markdown Syntax
+
+### Headers
 
 ```md
-| _italic_       | **bold**    | strike­through | code in-line |
-| -------------- | ----------- | --------------- | ------------ |
-| Column Title   |             |                 |              |
-| Another Column | Bolded text |                 |              |
-| One More       |             |                 | code         |
+# H1 Header
+
+## H2 Header
+
+### H3 Header
+
+#### H4 Header
+
+##### H5 Header
+
+###### H6 Header
 ```
+
+### Text Styling
+
+```md
+**Bold text**
+_Italic text_
+**_Bold and italic_**
+~~Strikethrough~~
+`Inline code`
+```
+
 Renders as:
 
-> Column Title bolded text
-> Another Column
-> One More
+**Bold text**  
+_Italic text_  
+**_Bold and italic_**  
+~~Strikethrough~~  
+`Inline code`
 
-**HEADERS AND BREAKS**
+### Lists
+
+**Unordered**:
+
 ```md
----Horizontal Rule
+- Item 1
+- Item 2
+  - Nested item
+  - Another nested
+- Item 3
 ```
-### TextH3
 
----
+**Ordered**:
 
-**LISTS**
-
-Lists can be unordered or ordered, which is determined by the symbol used to list them. Unordered lists have either -, +, or \*, while ordered lists require any integer followed by a . or ) character.
-
-An ordered list:
 ```md
 1. First item
 2. Second item
 3. Third item
 ```
 
-**LINKS**
-
-There are two ways to create links. The most commonly used format includes brackets followed by parentheses: [ ] ( ) . To render a link to an image, begin with a !.
-
-Unordered List Examples:
+**Task Lists**:
 
 ```md
-- [Link inline this way](https://rahulmaurya.com)
-- [Or add a title for the link](https://rahulmaurya.com "Google's Homepage")
-- [Here is a relative link within a repository](../blob/master/LICENSE)
-- ![I link to an image](path/to/image.png)
+- [x] Completed task
+- [ ] Incomplete task
+- [ ] Another task
 ```
 
-Combining the two:
+---
 
-The second format involves brackets, [ ][ ] or [ ], followed by a reference formatted with a bracket and colon, [ ]:, anywhere else in the document.
+## Links and Images
+
+### Links
+
 ```md
-1. First ordered list item
-2. Second ordered list item (which shows as 2.)
+[Link text](https://example.com)
+[Link with title](https://example.com "Hover text")
+[Reference link][ref]
+
+[ref]: https://example.com
 ```
-Examples:
+
+### Images
 
 ```md
-- [Reference-style link][Case-insensitive Reference Text]
-- [Numbers are commonly used][1]
-- [Text can link on its own as a reference]
+![Alt text](path/to/image.jpg)
+![Image with title](path/to/image.jpg "Image title")
 ```
-Indentation is needed for indented lists:
+
+---
+
+## Code Blocks
+
+### Inline Code
 
 ```md
-- Indented lists require four spaces in most specifications
-  - Sublists are implementation specific
-  - Try it out and render to be sure it works
-- Continuing the list after an indentation
+Use `const` instead of `var` in JavaScript.
 ```
-URLs, in and out of angle brackets, will automatically get turned into links with most implementations. Both https://rahulmaurya.com and will render as links, as well as https://rahulmaurya.com on some renderings.
 
-**BEST OF GITHUB FLAVORED MARKDOWN**
+### Code Blocks with Syntax Highlighting
 
-Task lists are a fantastic usage of the GitHub-specific implementation:
+````md
+```javascript
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+```
+````
+
+Renders as:
+
+```javascript
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+```
+
+### Supported Languages
+
+- JavaScript/TypeScript
+- Python
+- Java
+- C/C++
+- Go
+- Rust
+- SQL
+- Bash
+- And many more!
+
+---
+
+## Tables
+
 ```md
-- [x] Step one is complete
-- [ ] Step two in this unordered list is
-- [x] Step three is done as well
+| Header 1 | Header 2 | Header 3 |
+| -------- | -------- | -------- |
+| Row 1    | Data     | More     |
+| Row 2    | Data     | More     |
 ```
 
 Renders as:
 
-- ☐ Step one is complete
-- ☑ Step two in this unordered list is
-- ☐ Step three is done as well
+| Header 1 | Header 2 | Header 3 |
+| -------- | -------- | -------- |
+| Row 1    | Data     | More     |
+| Row 2    | Data     | More     |
 
-Drop-downs are an incredible feature to tidy up files:
+**Alignment**:
 
-<CodeBlock code={`
-<details>
-  <summary>
-    <p>Q1: What is the best website in the world?</p>
-  </summary>
-  A1: <a href="https://rahulmaurya.com">https://rahulmaurya.com</a>
-</details>
-`} language="html" />
-
-### Renders as
-
-<CodeBlock code={`
-<details>
-  <summary>
-    <p>Q1: What is the best website in the world?</p>
-  </summary>
-  A1: https://rahulmaurya.com
-</details>
-`} language="html" filename="Sample.md" />
-
-Nearly all programming languages are supported using this syntax (python, ruby, go, rust, javascript, and java to name a few).
-
-You can also have language-specific syntax highlighting. Instead of having a code block of black-and-white text, append the language to the first set of backticks to have highlighting enabled:
-
-<CodeBlock code={`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Your Blog</title>
-</head>
-<body>
-  <h2>Contact Form</h2>
-  <form action="/submit" method="POST">
-    <label for="name">Name:</label>
-    <input type="text" id="name" name="name" required>
-    <br><br>
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required>
-    <br><br>
-    <input type="submit" value="Submit">
-  </form>
-</body>
-</html>
-`} language="html" filename="index.html"/>
+```md
+| Left | Center | Right |
+| :--- | :----: | ----: |
+| L    |   C    |     R |
+```
 
 ---
+
+## Blockquotes
+
+```md
+> This is a blockquote
+>
+> It can span multiple lines
+>
+> > And can be nested
+```
+
+Renders as:
+
+> This is a blockquote
+>
+> It can span multiple lines
+
+---
+
+## MDX-Specific Features
+
+### Importing Components
+
+```mdx
+import { Button } from "./components/Button";
+import Chart from "./components/Chart";
+
+# My Post
+
+Here's a button:
+
+<Button variant="primary">Click me</Button>
+
+And a chart:
+
+<Chart data={salesData} />
+```
+
+### Using JavaScript
+
+```mdx
+export const author = "Rahul Maurya";
+export const publishDate = new Date("2026-01-03");
+
+# {author}'s Blog
+
+Published on {publishDate.toLocaleDateString()}
+```
+
+### Inline Expressions
+
+```mdx
+The answer is {2 + 2}.
+
+Today is {new Date().toLocaleDateString()}.
+
+Random number: {Math.floor(Math.random() \* 100)}
+```
+
+---
+
+## Advanced Patterns
+
+### Custom Components
+
+Replace default HTML elements:
+
+```mdx
+import { CustomHeading, CustomLink } from "./components";
+
+export const components = {
+  h1: CustomHeading,
+  a: CustomLink,
+};
+
+# This uses CustomHeading
+
+[This uses CustomLink](https://example.com)
+```
+
+### Interactive Examples
+
+```mdx
+import { Counter } from "./components/Counter";
+
+# Interactive Counter
+
+<Counter initialValue={0} />
+
+Try clicking the buttons above!
+```
+
+### Code Playgrounds
+
+```mdx
+import { CodePlayground } from "./components/CodePlayground";
+
+<CodePlayground
+  code={`
+function greet(name) {
+  return \`Hello, \${name}!\`;
+}
+
+console.log(greet('World'));
+`}
+language="javascript"
+/>
+```
+
+---
+
+## MDX with Next.js
+
+### Setup
+
+```bash
+npm install @next/mdx @mdx-js/loader @mdx-js/react
+```
+
+```javascript
+// next.config.js
+const withMDX = require("@next/mdx")({
+  extension: /\.mdx?$/,
+  options: {
+    remarkPlugins: [],
+    rehypePlugins: [],
+  },
+});
+
+module.exports = withMDX({
+  pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
+});
+```
+
+### Creating MDX Pages
+
+```mdx
+---
+title: "My Blog Post"
+date: "2026-01-03"
+---
+
+# {frontmatter.title}
+
+Published on {frontmatter.date}
+
+Your content here...
+```
+
+### Dynamic MDX
+
+```tsx
+import { MDXRemote } from "next-mdx-remote/rsc";
+
+export default async function Post({ params }) {
+  const post = await getPost(params.slug);
+
+  return (
+    <article>
+      <h1>{post.frontMatter.title}</h1>
+      <MDXRemote source={post.content} />
+    </article>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+### 1. Organize Components
+
+```
+components/
+├── mdx/
+│   ├── Callout.tsx
+│   ├── CodeBlock.tsx
+│   ├── Image.tsx
+│   └── index.ts
+└── ...
+```
+
+### 2. Use Frontmatter
+
+```mdx
+---
+title: "Post Title"
+date: "2026-01-03"
+author: "Rahul Maurya"
+tags: ["mdx", "react"]
+---
+
+# {frontmatter.title}
+
+By {frontmatter.author}
+```
+
+### 3. Create Reusable Components
+
+```tsx
+// components/mdx/Callout.tsx
+export function Callout({ type = "info", children }) {
+  return <div className={`callout callout-${type}`}>{children}</div>;
+}
+```
+
+Usage in MDX:
+
+```mdx
+<Callout type="warning">This is important information!</Callout>
+```
+
+### 4. Type Safety
+
+```typescript
+// types/mdx.d.ts
+declare module "*.mdx" {
+  import { MDXProps } from "mdx/types";
+  export default function MDXContent(props: MDXProps): JSX.Element;
+  export const frontMatter: {
+    title: string;
+    date: string;
+    author: string;
+  };
+}
+```
+
+---
+
+## Common Use Cases
+
+### 1. Documentation
+
+````mdx
+# API Reference
+
+## `useUser` Hook
+
+Fetches the current user.
+
+```tsx
+import { useUser } from "@/hooks/useUser";
+
+function Profile() {
+  const { user, loading } = useUser();
+
+  if (loading) return <div>Loading...</div>;
+  return <div>Hello, {user.name}</div>;
+}
+```
+````
+
+// Note: Callout component would be imported and used here
+
+````
+
+### 2. Blog Posts
+
+```mdx
+---
+title: "10 React Tips"
+date: "2026-01-03"
+---
+
+# {frontmatter.title}
+
+// BlogMeta and Newsletter components would be imported
+
+Here are my top 10 React tips...
+````
+
+### 3. Interactive Tutorials
+
+```mdx
+# Learn React Hooks
+
+<CodeExample
+  code={`
+function Counter() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(count + 1)}>{count}</button>
+}
+  `}
+  editable
+/>
+
+Try modifying the code above!
+```
+
+---
+
+## Plugins and Extensions
+
+### Remark Plugins (Markdown)
+
+```javascript
+// next.config.js
+const remarkGfm = require("remark-gfm");
+const remarkMath = require("remark-math");
+
+module.exports = withMDX({
+  options: {
+    remarkPlugins: [remarkGfm, remarkMath],
+  },
+});
+```
+
+### Rehype Plugins (HTML)
+
+```javascript
+const rehypeHighlight = require("rehype-highlight");
+const rehypeSlug = require("rehype-slug");
+
+module.exports = withMDX({
+  options: {
+    rehypePlugins: [rehypeHighlight, rehypeSlug],
+  },
+});
+```
+
+---
+
+## Conclusion
+
+MDX combines the best of Markdown and React:
+
+1. **Simple syntax** for content
+2. **Interactive components** for rich experiences
+3. **Type-safe** with TypeScript
+4. **Flexible** for any use case
+5. **Powerful** with plugins
+
+Perfect for:
+
+- Documentation sites
+- Blogs
+- Landing pages
+- Interactive tutorials
+
+Start using MDX today and create amazing content! 🚀
+
+---
+
+## Further Reading
+
+- [MDX Documentation](https://mdxjs.com/)
+- [Next.js MDX Guide](https://nextjs.org/docs/app/building-your-application/configuring/mdx)
+- [MDX Playground](https://mdxjs.com/playground/)

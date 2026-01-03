@@ -1,0 +1,621 @@
+---
+title: "Web Security Essentials: Protecting Your Applications"
+date: "2026-01-03"
+description: "A comprehensive guide to web application security covering XSS, CSRF, SQL Injection, authentication, and modern security best practices with practical code examples and prevention strategies."
+image: "/img/web-security-layers.png"
+tags: ["Security", "Web Development", "Best Practices", "JavaScript"]
+---
+
+# Web Security Essentials: Protecting Your Applications
+
+_Published on January 3, 2026_
+
+In today's digital landscape, security isn't optional—it's fundamental. A single vulnerability can compromise user data, damage reputation, and result in significant financial losses. This guide covers essential web security concepts every developer must understand.
+
+---
+
+## The Security Layers
+
+Modern web applications require defense in depth—multiple layers of security working together.
+
+![Web Security Layers](/img/web-security-layers.png)
+
+Let's explore each layer and learn how to protect against common vulnerabilities.
+
+---
+
+## Layer 1: Client-Side Security
+
+### Cross-Site Scripting (XSS)
+
+XSS occurs when attackers inject malicious scripts into web pages viewed by other users.
+
+#### Types of XSS
+
+**1. Stored XSS** - Malicious script stored in database
+
+```jsx
+//  VULNERABLE: Directly rendering user input
+function CommentSection({ comments }) {
+  return (
+    <div>
+      {comments.map((comment) => (
+        <div dangerouslySetInnerHTML={{ __html: comment.text }} />
+      ))}
+    </div>
+  );
+}
+
+// Attacker submits: <script>steal_cookies()</script>
+```
+
+**2. Reflected XSS** - Script in URL parameters
+
+```javascript
+// VULNERABLE: Using URL params without sanitization
+const searchQuery = new URLSearchParams(window.location.search).get("q");
+document.getElementById("results").innerHTML = `Results for: ${searchQuery}`;
+
+// Attacker URL: ?q=<script>alert('XSS')</script>
+```
+
+**3. DOM-based XSS** - Client-side script manipulation
+
+```javascript
+// VULNERABLE: Using eval or innerHTML with user input
+const userInput = document.getElementById("input").value;
+eval(userInput); // Never do this!
+```
+
+#### XSS Prevention
+
+```jsx
+//SAFE: React automatically escapes content
+function CommentSection({ comments }) {
+  return (
+    <div>
+      {comments.map((comment) => (
+        <div key={comment.id}>
+          {comment.text} {/* Automatically escaped */}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// SAFE: Sanitize HTML if you must use it
+import DOMPurify from "dompurify";
+
+function RichContent({ html }) {
+  const sanitized = DOMPurify.sanitize(html);
+  return <div dangerouslySetInnerHTML={{ __html: sanitized }} />;
+}
+
+// SAFE: Content Security Policy header
+// In your server configuration:
+// Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-random123'
+```
+
+---
+
+### Cross-Site Request Forgery (CSRF)
+
+CSRF tricks users into performing unwanted actions on authenticated websites.
+
+#### How CSRF Works
+
+```html
+<!-- Attacker's malicious site -->
+<img src="https://bank.com/transfer?to=attacker&amount=10000" />
+
+<!-- When victim visits, their authenticated session makes the request! -->
+```
+
+#### CSRF Prevention
+
+```javascript
+// Use CSRF tokens
+// Server generates token and includes in form
+app.get("/form", (req, res) => {
+  const csrfToken = generateToken();
+  req.session.csrfToken = csrfToken;
+  res.render("form", { csrfToken });
+});
+
+// Client includes token in requests
+fetch("/api/transfer", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-CSRF-Token": csrfToken,
+  },
+  body: JSON.stringify({ to: "recipient", amount: 100 }),
+});
+
+// Server validates token
+app.post("/api/transfer", (req, res) => {
+  const token = req.headers["x-csrf-token"];
+  if (token !== req.session.csrfToken) {
+    return res.status(403).json({ error: "Invalid CSRF token" });
+  }
+  // Process transfer
+});
+```
+
+```javascript
+// SameSite cookies
+res.cookie("sessionId", sessionId, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "strict", // Prevents CSRF
+});
+```
+
+---
+
+## Layer 2: Network Security
+
+### HTTPS Everywhere
+
+```javascript
+// Enforce HTTPS
+app.use((req, res, next) => {
+  if (req.header("x-forwarded-proto") !== "https") {
+    return res.redirect(`https://${req.header("host")}${req.url}`);
+  }
+  next();
+});
+
+// HSTS Header
+app.use((req, res, next) => {
+  res.setHeader(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload"
+  );
+  next();
+});
+```
+
+### CORS Configuration
+
+```javascript
+// DANGEROUS: Allow all origins
+app.use(cors({ origin: "*" }));
+
+// SAFE: Whitelist specific origins
+const allowedOrigins = ["https://yourdomain.com", "https://app.yourdomain.com"];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+```
+
+---
+
+## Layer 3: Server-Side Security
+
+### SQL Injection
+
+One of the most dangerous vulnerabilities—attackers can read, modify, or delete your entire database.
+
+```javascript
+// VULNERABLE: String concatenation
+app.get("/user", (req, res) => {
+  const userId = req.query.id;
+  const query = `SELECT * FROM users WHERE id = ${userId}`;
+  db.query(query); // Attacker can inject: 1 OR 1=1
+});
+
+// SAFE: Parameterized queries
+app.get("/user", async (req, res) => {
+  const userId = req.query.id;
+  const query = "SELECT * FROM users WHERE id = ?";
+  const user = await db.query(query, [userId]);
+  res.json(user);
+});
+
+// SAFE: ORM with built-in protection
+const user = await User.findOne({
+  where: { id: userId },
+});
+```
+
+### Authentication Best Practices
+
+```javascript
+// ✅ Password hashing with bcrypt
+import bcrypt from "bcrypt";
+
+// Registration
+async function registerUser(email, password) {
+  const saltRounds = 12;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+  await db.users.create({
+    email,
+    password: hashedPassword,
+  });
+}
+
+// Login
+async function loginUser(email, password) {
+  const user = await db.users.findOne({ where: { email } });
+
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+
+  const isValid = await bcrypt.compare(password, user.password);
+
+  if (!isValid) {
+    throw new Error("Invalid credentials");
+  }
+
+  return generateJWT(user);
+}
+```
+
+### JWT Security
+
+```javascript
+// ✅ Secure JWT implementation
+import jwt from "jsonwebtoken";
+
+function generateJWT(user) {
+  return jwt.sign(
+    {
+      userId: user.id,
+      email: user.email,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1h",
+      issuer: "your-app",
+      audience: "your-app-users",
+    }
+  );
+}
+
+// Verify JWT middleware
+function authenticateJWT(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: "Invalid token" });
+  }
+}
+
+// Refresh token pattern
+function generateTokens(user) {
+  const accessToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+    expiresIn: "15m",
+  });
+
+  const refreshToken = jwt.sign(
+    { userId: user.id },
+    process.env.REFRESH_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return { accessToken, refreshToken };
+}
+```
+
+---
+
+## Layer 4: Data Protection
+
+### Encryption at Rest
+
+```javascript
+// Encrypt sensitive data before storing
+import crypto from "crypto";
+
+const algorithm = "aes-256-gcm";
+const key = Buffer.from(process.env.ENCRYPTION_KEY, "hex");
+
+function encrypt(text) {
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
+
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+
+  const authTag = cipher.getAuthTag();
+
+  return {
+    encrypted,
+    iv: iv.toString("hex"),
+    authTag: authTag.toString("hex"),
+  };
+}
+
+function decrypt(encrypted, iv, authTag) {
+  const decipher = crypto.createDecipheriv(
+    algorithm,
+    key,
+    Buffer.from(iv, "hex")
+  );
+
+  decipher.setAuthTag(Buffer.from(authTag, "hex"));
+
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+
+  return decrypted;
+}
+
+// Usage
+const sensitiveData = "user-ssn-123-45-6789";
+const { encrypted, iv, authTag } = encrypt(sensitiveData);
+
+// Store encrypted, iv, and authTag in database
+await db.users.update(
+  {
+    ssn_encrypted: encrypted,
+    ssn_iv: iv,
+    ssn_tag: authTag,
+  },
+  { where: { id: userId } }
+);
+```
+
+---
+
+## Security Headers
+
+```javascript
+// Essential security headers
+import helmet from "helmet";
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    noSniff: true,
+    xssFilter: true,
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  })
+);
+
+// ✅ Additional custom headers
+app.use((req, res, next) => {
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Permissions-Policy", "geolocation=(), microphone=()");
+  next();
+});
+```
+
+---
+
+## Rate Limiting
+
+```javascript
+// ✅ Prevent brute force attacks
+import rateLimit from "express-rate-limit";
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts
+  message: "Too many login attempts, please try again later",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.post("/api/login", loginLimiter, async (req, res) => {
+  // Login logic
+});
+
+// API rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // 100 requests per minute
+  message: "Too many requests, please slow down",
+});
+
+app.use("/api/", apiLimiter);
+```
+
+---
+
+## Input Validation
+
+```javascript
+// Validate all user input
+import { z } from "zod";
+
+const userSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8).max(100),
+  age: z.number().int().min(18).max(120),
+});
+
+app.post("/api/register", async (req, res) => {
+  try {
+    const validatedData = userSchema.parse(req.body);
+    // Proceed with registration
+  } catch (error) {
+    return res.status(400).json({
+      error: "Invalid input",
+      details: error.errors,
+    });
+  }
+});
+
+// Sanitize file uploads
+import multer from "multer";
+import path from "path";
+
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only images are allowed"));
+    }
+  },
+});
+```
+
+---
+
+## Security Checklist
+
+### Development
+
+- Use HTTPS everywhere
+- Implement CSP headers
+- Validate and sanitize all inputs
+- Use parameterized queries
+- Hash passwords with bcrypt
+- Implement rate limiting
+- Use secure session management
+- Enable CORS properly
+- Set security headers
+- Keep dependencies updated
+
+### Authentication
+
+- Implement MFA where possible
+- Use secure password requirements
+- Implement account lockout
+- Use secure password reset flow
+- Implement session timeout
+- Use HttpOnly, Secure cookies
+- Implement CSRF protection
+
+### Data Protection
+
+- Encrypt sensitive data at rest
+- Use TLS for data in transit
+- Implement proper access controls
+- Regular security audits
+- Backup data securely
+- Implement data retention policies
+
+---
+
+## Tools and Resources
+
+### Security Testing
+
+```bash
+# npm audit for dependency vulnerabilities
+npm audit
+
+# OWASP ZAP for penetration testing
+# https://www.zaproxy.org/
+
+# Snyk for continuous security monitoring
+npm install -g snyk
+snyk test
+```
+
+### Monitoring
+
+```javascript
+// Log security events
+import winston from "winston";
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [new winston.transports.File({ filename: "security.log" })],
+});
+
+// Log failed login attempts
+app.post("/api/login", async (req, res) => {
+  try {
+    const user = await authenticateUser(req.body);
+    logger.info("Successful login", { userId: user.id, ip: req.ip });
+  } catch (error) {
+    logger.warn("Failed login attempt", {
+      email: req.body.email,
+      ip: req.ip,
+      userAgent: req.headers["user-agent"],
+    });
+  }
+});
+```
+
+---
+
+## Conclusion
+
+Security is not a one-time task—it's an ongoing process. Stay informed about new vulnerabilities, keep your dependencies updated, and always follow the principle of least privilege.
+
+Remember: **Security is everyone's responsibility**. Whether you're a frontend developer, backend engineer, or DevOps specialist, understanding these fundamentals is crucial for building safe applications.
+
+---
+
+## Key Takeaways
+
+1. **Defense in depth**: Multiple security layers protect better than one
+2. **Never trust user input**: Validate, sanitize, and escape everything
+3. **Use established libraries**: Don't roll your own crypto or auth
+4. **Keep dependencies updated**: Vulnerabilities are discovered constantly
+5. **Log security events**: Monitor for suspicious activity
+6. **Educate your team**: Security awareness prevents many attacks
+
+Stay secure! 🔒
+
+---
+
+## Further Reading
+
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [MDN Web Security](https://developer.mozilla.org/en-US/docs/Web/Security)
+- [Node.js Security Best Practices](https://nodejs.org/en/docs/guides/security/)
+- [JWT Best Practices](https://tools.ietf.org/html/rfc8725)

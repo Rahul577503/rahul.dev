@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 interface Project {
   title: string;
-  tech: JSX.Element[];
+  tech: React.ReactNode[];
   link: string;
   cover: string;
   background: string;

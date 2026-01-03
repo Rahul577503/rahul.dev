@@ -1,0 +1,637 @@
+---
+title: "Bundle Size Optimization: A Complete Investigation Guide"
+date: "2026-01-03"
+description: "Learn how to analyze and drastically reduce your JavaScript bundle size with practical techniques, real-world examples, and step-by-step investigation methods. Achieve lighthouse scores of 97+ with proper optimization."
+image: "/img/lighthouse-score.png"
+tags: ["Performance", "Optimization", "JavaScript", "Webpack", "Bundle Size"]
+---
+
+# Bundle Size Optimization: A Complete Investigation Guide
+
+_Published on January 3, 2026_
+
+A bloated JavaScript bundle is one of the fastest ways to kill your web app's performance. In this comprehensive guide, we'll explore how to investigate, analyze, and dramatically reduce your bundle size using proven techniques and real-world examples.
+
+![Lighthouse Performance Score](/img/lighthouse-score.png)
+
+**The result?** Lighthouse scores of 97+ and blazing-fast load times.
+
+---
+
+## Why Bundle Size Matters
+
+Every kilobyte of JavaScript you ship to users has a cost:
+
+- **Download time**: Users on slow connections wait longer
+- **Parse time**: JavaScript must be parsed before execution
+- **Execution time**: Large bundles take longer to run
+- **Memory usage**: More code = more memory consumption
+
+**Real Impact**:
+
+- 100KB of JavaScript ≈ 1 second on 3G
+- 500KB bundle can take 5-10 seconds to become interactive
+- Each 100KB costs mobile users ~$0.10 in data charges
+
+---
+
+## The Investigation Process
+
+![Bundle Analysis Flow](/img/bundle-analysis-flow.png)
+
+Follow this systematic approach to optimize your bundle:
+
+### Step 1: Measure Your Bundle
+
+You can't optimize what you don't measure. Start by analyzing your current bundle size.
+
+#### For Webpack Projects
+
+```bash
+npm install --save-dev webpack-bundle-analyzer
+```
+
+```javascript
+// webpack.config.js
+const BundleAnalyzerPlugin =
+  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+
+module.exports = {
+  plugins: [
+    new BundleAnalyzerPlugin({
+      analyzerMode: "static",
+      openAnalyzer: true,
+      reportFilename: "bundle-report.html",
+    }),
+  ],
+};
+```
+
+#### For Vite Projects
+
+```bash
+npm install --save-dev rollup-plugin-visualizer
+```
+
+```typescript
+// vite.config.ts
+import { visualizer } from "rollup-plugin-visualizer";
+
+export default defineConfig({
+  plugins: [
+    visualizer({
+      filename: "stats.html",
+      emitFile: true,
+      template: "treemap", // or 'sunburst', 'network'
+    }),
+  ],
+});
+```
+
+#### For Next.js Projects
+
+```bash
+npm install @next/bundle-analyzer
+```
+
+```javascript
+// next.config.js
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+});
+
+module.exports = withBundleAnalyzer({
+  // your Next.js config
+});
+```
+
+Then run:
+
+```bash
+ANALYZE=true npm run build
+```
+
+---
+
+### Step 2: Identify the Culprits
+
+After running the analyzer, you'll see a visual representation of your bundle. Look for:
+
+**Red Flags**:
+
+- Single packages > 100KB
+- Duplicate libraries (same lib, different versions)
+- Unused dependencies
+- Entire libraries imported when only one function is needed
+
+**Example Analysis**:
+
+```
+Total Bundle: 850KB
+├─ node_modules/
+│  ├─ moment.js (232KB) ⚠️ Too large!
+│  ├─ lodash (71KB) ⚠️ Can be optimized
+│  ├─ react-icons (156KB) ⚠️ Importing all icons
+│  └─ date-fns (45KB) ✅ Reasonable
+├─ src/
+│  └─ app code (346KB)
+```
+
+---
+
+## Common Optimization Techniques
+
+### 1. Replace Heavy Libraries
+
+Many popular libraries have lighter alternatives:
+
+```javascript
+// Moment.js (232KB minified)
+import moment from "moment";
+const formatted = moment().format("YYYY-MM-DD");
+
+// date-fns (13KB for what you use)
+import { format } from "date-fns";
+const formatted = format(new Date(), "yyyy-MM-dd");
+
+// Or native Intl API (0KB - built-in)
+const formatted = new Intl.DateTimeFormat("en-CA").format(new Date());
+```
+
+**Savings**: ~220KB (95% reduction!)
+
+```javascript
+// Lodash (full library: 71KB)
+import _ from "lodash";
+const unique = _.uniq(array);
+
+// Lodash with tree-shaking (4KB per function)
+import uniq from "lodash/uniq";
+const unique = uniq(array);
+
+// Native JavaScript (0KB)
+const unique = [...new Set(array)];
+```
+
+**Savings**: ~67KB (94% reduction!)
+
+---
+
+### 2. Tree-Shaking and Dead Code Elimination
+
+Modern bundlers automatically remove unused code, but you need to help them:
+
+#### Good: Named Imports
+
+```javascript
+// Allows tree-shaking
+import { Button, Input } from "my-ui-library";
+```
+
+#### Bad: Namespace Imports
+
+```javascript
+// Prevents tree-shaking - imports EVERYTHING
+import * as UI from "my-ui-library";
+
+// Even if you only use one component
+<UI.Button />;
+```
+
+#### Real Example: React Icons
+
+```javascript
+// ❌ Bad: Imports ALL icons (156KB)
+import * as Icons from "react-icons/fa";
+<Icons.FaHome />;
+
+// ✅ Good: Imports only what you need (2KB)
+import { FaHome, FaUser } from "react-icons/fa";
+<FaHome />;
+```
+
+**Savings**: ~154KB (98% reduction!)
+
+---
+
+### 3. Code Splitting
+
+Don't send code users don't need immediately.
+
+![Code Splitting Diagram](/img/code-splitting-diagram.png)
+
+#### Route-Based Splitting
+
+```javascript
+//Bad: Everything in one bundle
+import HomePage from "./pages/Home";
+import DashboardPage from "./pages/Dashboard";
+import SettingsPage from "./pages/Settings";
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+    </Routes>
+  );
+}
+```
+
+```javascript
+// Good: Split by route
+import { lazy, Suspense } from "react";
+
+const HomePage = lazy(() => import("./pages/Home"));
+const DashboardPage = lazy(() => import("./pages/Dashboard"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
+    </Suspense>
+  );
+}
+```
+
+**Result**:
+
+- Initial bundle: 100KB (was 500KB)
+- Each route chunk: ~50KB loaded on demand
+- **80% faster initial load!**
+
+#### Component-Based Splitting
+
+```javascript
+// ✅ Split heavy components
+const HeavyChart = lazy(() => import("./components/HeavyChart"));
+const VideoPlayer = lazy(() => import("./components/VideoPlayer"));
+const RichTextEditor = lazy(() => import("./components/RichTextEditor"));
+
+function Dashboard() {
+  const [showChart, setShowChart] = useState(false);
+
+  return (
+    <div>
+      <button onClick={() => setShowChart(true)}>Show Analytics</button>
+
+      {showChart && (
+        <Suspense fallback={<Spinner />}>
+          <HeavyChart />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### 4. Dynamic Imports for Conditional Code
+
+```javascript
+// ✅ Load polyfills only when needed
+async function loadPolyfills() {
+  if (typeof window.IntersectionObserver === "undefined") {
+    await import("intersection-observer");
+  }
+
+  if (!("fetch" in window)) {
+    await import("whatwg-fetch");
+  }
+}
+
+// Load features on demand
+async function handleExport() {
+  const { exportToExcel } = await import("./utils/export");
+  exportToExcel(data);
+}
+
+// Load analytics only in production
+if (process.env.NODE_ENV === "production") {
+  import("./analytics").then(({ init }) => init());
+}
+```
+
+---
+
+### 5. Optimize Dependencies
+
+#### Check for Duplicates
+
+```bash
+npm ls <package-name>
+```
+
+If you see multiple versions:
+
+```
+my-app@1.0.0
+├─┬ package-a@1.0.0
+│ └── lodash@4.17.21
+└─┬ package-b@2.0.0
+  └── lodash@4.17.20  ⚠️ Duplicate!
+```
+
+**Fix with resolutions** (package.json):
+
+```json
+{
+  "resolutions": {
+    "lodash": "4.17.21"
+  }
+}
+```
+
+#### Analyze Transitive Dependencies
+
+```bash
+npm ls --depth=3
+```
+
+Sometimes a small package pulls in huge dependencies:
+
+```
+my-package (5KB)
+└── some-util (10KB)
+    └── moment (232KB) ⚠️ Unexpected!
+```
+
+**Solution**: Find an alternative or fork and remove the dependency.
+
+---
+
+### 6. Webpack-Specific Optimizations
+
+```javascript
+// webpack.config.js
+module.exports = {
+  optimization: {
+    // Split vendor code
+    splitChunks: {
+      chunks: "all",
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendors",
+          priority: 10,
+        },
+        common: {
+          minChunks: 2,
+          priority: 5,
+          reuseExistingChunk: true,
+        },
+      },
+    },
+
+    // Minimize code
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: {
+            drop_console: true, // Remove console.logs
+            drop_debugger: true,
+          },
+        },
+      }),
+    ],
+  },
+
+  // Externalize large libraries (load from CDN)
+  externals: {
+    react: "React",
+    "react-dom": "ReactDOM",
+  },
+};
+```
+
+---
+
+### 7. Next.js Optimizations
+
+```javascript
+// next.config.js
+module.exports = {
+  // Analyze bundle
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.optimization.splitChunks.cacheGroups = {
+        ...config.optimization.splitChunks.cacheGroups,
+        commons: {
+          name: "commons",
+          chunks: "all",
+          minChunks: 2,
+        },
+      };
+    }
+    return config;
+  },
+
+  // Enable SWC minification (faster than Terser)
+  swcMinify: true,
+
+  // Optimize images
+  images: {
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200],
+    imageSizes: [16, 32, 48, 64, 96],
+  },
+
+  // Remove unused CSS
+  experimental: {
+    optimizeCss: true,
+  },
+};
+```
+
+---
+
+## Advanced Techniques
+
+### 1. Barrel File Optimization
+
+Barrel files (index.ts that re-export everything) can prevent tree-shaking:
+
+```typescript
+//  Bad: components/index.ts
+export * from "./Button";
+export * from "./Input";
+export * from "./Modal";
+// ... 50 more components
+
+// When you import one component, bundler might include all
+import { Button } from "./components";
+```
+
+```typescript
+// Good: Import directly
+import { Button } from "./components/Button";
+
+// Or use named exports in barrel file
+export { Button } from "./Button";
+export { Input } from "./Input";
+// Explicit exports help bundlers
+```
+
+### 2. Analyze Import Cost in Real-Time
+
+```bash
+# VS Code extension
+code --install-extension wix.vscode-import-cost
+```
+
+This shows the size of imported packages directly in your editor!
+
+### 3. Use Lighter Alternatives
+
+| Heavy Library | Size  | Light Alternative  | Size | Savings |
+| ------------- | ----- | ------------------ | ---- | ------- |
+| Moment.js     | 232KB | date-fns           | 13KB | 94%     |
+| Lodash (full) | 71KB  | Native JS          | 0KB  | 100%    |
+| Axios         | 13KB  | Fetch API          | 0KB  | 100%    |
+| jQuery        | 87KB  | Native DOM         | 0KB  | 100%    |
+| Recharts      | 410KB | Lightweight-charts | 45KB | 89%     |
+
+---
+
+## Measuring Success
+
+### Before Optimization
+
+```
+Initial Bundle: 850KB
+├─ Vendor: 650KB
+├─ App Code: 200KB
+└─ Load Time: 8.5s (3G)
+```
+
+### After Optimization
+
+```
+Initial Bundle: 180KB (-79%)
+├─ Vendor: 80KB (-88%)
+├─ App Code: 100KB (-50%)
+├─ Route Chunks: 30-50KB each
+└─ Load Time: 1.8s (3G) ⚡
+```
+
+### Performance Metrics
+
+Track these metrics:
+
+```javascript
+// Performance Observer
+const observer = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    console.log(`${entry.name}: ${entry.duration}ms`);
+  }
+});
+
+observer.observe({ entryTypes: ["measure", "navigation"] });
+
+// Measure bundle load time
+performance.mark("bundle-start");
+// ... load bundle
+performance.mark("bundle-end");
+performance.measure("bundle-load", "bundle-start", "bundle-end");
+```
+
+---
+
+## Optimization Checklist
+
+### Analysis
+
+- [ ] Run bundle analyzer
+- [ ] Identify packages > 50KB
+- [ ] Check for duplicate dependencies
+- [ ] Analyze transitive dependencies
+
+### Quick Wins
+
+- [ ] Replace moment.js with date-fns
+- [ ] Use named imports instead of namespace imports
+- [ ] Remove unused dependencies
+- [ ] Enable tree-shaking
+
+### Code Splitting
+
+- [ ] Implement route-based splitting
+- [ ] Lazy load heavy components
+- [ ] Dynamic import for conditional features
+- [ ] Split vendor bundles
+
+### Advanced
+
+- [ ] Optimize barrel files
+- [ ] Use lighter library alternatives
+- [ ] Externalize large libraries to CDN
+- [ ] Enable compression (Gzip/Brotli)
+- [ ] Remove source maps from production
+
+---
+
+## Tools and Resources
+
+### Bundle Analyzers
+
+- [webpack-bundle-analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer)
+- [rollup-plugin-visualizer](https://github.com/btd/rollup-plugin-visualizer)
+- [@next/bundle-analyzer](https://www.npmjs.com/package/@next/bundle-analyzer)
+
+### Size Checkers
+
+- [Bundlephobia](https://bundlephobia.com/) - Check npm package sizes
+- [Import Cost](https://marketplace.visualstudio.com/items?itemName=wix.vscode-import-cost) - VS Code extension
+- [Size Limit](https://github.com/ai/size-limit) - CI tool to prevent size regressions
+
+### Monitoring
+
+```bash
+# Add to package.json
+{
+  "scripts": {
+    "size": "size-limit",
+    "size:why": "size-limit --why"
+  },
+  "size-limit": [
+    {
+      "path": "dist/bundle.js",
+      "limit": "200 KB"
+    }
+  ]
+}
+```
+
+---
+
+## Conclusion
+
+Bundle size optimization is not a one-time task—it's an ongoing process. Every dependency you add, every feature you build, affects your bundle size.
+
+**Key Takeaways**:
+
+1. **Measure first**: Use bundle analyzers to identify problems
+2. **Replace heavy libraries**: There's usually a lighter alternative
+3. **Code split aggressively**: Don't send code users don't need
+4. **Enable tree-shaking**: Use named imports and ES modules
+5. **Monitor continuously**: Set up size budgets and CI checks
+
+Remember: **Every kilobyte counts**. A 100KB reduction might seem small, but it's the difference between a user staying or leaving.
+
+Start optimizing today, and watch your Lighthouse scores soar! 🚀
+
+---
+
+## Further Reading
+
+- [Web.dev - Reduce JavaScript Payloads](https://web.dev/reduce-javascript-payloads-with-code-splitting/)
+- [Webpack - Code Splitting](https://webpack.js.org/guides/code-splitting/)
+- [Next.js - Optimizing Bundle Size](https://nextjs.org/docs/advanced-features/measuring-performance)

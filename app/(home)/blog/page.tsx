@@ -4,7 +4,7 @@ const Blog = async () => {
   const blogs = await fetchBlogs();
 
   return (
-    <div className="dark:bg-black bg-black dark:bg-grid-white/[0.05] bg-grid-white/[0.03]">
+    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] transition-colors">
       <BlogPage blogs={blogs} />
     </div>
   );

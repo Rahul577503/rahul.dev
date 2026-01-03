@@ -1,111 +1,631 @@
 ---
-title: OptimizingImages in Next.
-date: 05-05-2024
+title: "Next.js Image Optimization: Complete Guide"
+date: "2026-01-03"
+description: "Master Next.js Image component with automatic optimization, responsive images, lazy loading, and advanced techniques for maximum performance. Learn remotePatterns, blur placeholders, and best practices."
 image: "https://img.freepik.com/free-photo/male-suit-with-virtual-reality-glasses-his-head-working-virtual-financial-world_613910-306.jpg?t=st=1717589266~exp=1717592866~hmac=49102334ae4c51d979642aa9199fbc62eef1bd925f150c5327cf9816c45b76a1&w=1480"
-description:  Optimizing External Images in Next.js.
+tags: ["Next.js", "Performance", "Images", "Optimization"]
 ---
 
-In modern web development, optimizing images is crucial for enhancing website performance and user experience. Next.js provides powerful built-in support for image optimization, allowing developers to efficiently handle both local and external images. In this blog post, we'll explore how to configure Next.js to optimize images from external sources using the `remotePatterns` and `domains` properties in `next.config.js`.
+# Next.js Image Optimization: Complete Guide
 
-#### Introduction
+_Published on January 3, 2026_
 
-Next.js simplifies image optimization with its `next/image` component. This component automatically optimizes images on-demand as users request them, ensuring faster load times and better performance. When dealing with external images, Next.js offers two key configuration options: `remotePatterns` and `domains`. Let's dive into these options and see how they can be configured.
+Images typically account for 50% of a website's total page weight. Optimizing them is crucial for performance, user experience, and SEO. Next.js provides the powerful `next/image` component that automatically optimizes images with zero configuration.
 
-### Configuring External Image Optimization
+---
 
-#### 1. The `remotePatterns` Property
+## Why Use Next.js Image Component?
 
-The `remotePatterns` property allows you to define specific URL patterns for external images. This is useful when you want to optimize images hosted on specific paths of an external domain. Here’s an example configuration:
+The `next/image` component provides automatic optimization out of the box:
 
-<CodeBlock code ={`
+**Automatic Optimizations**:
 
+- ✅ Resize images to correct dimensions
+- ✅ Serve modern formats (WebP, AVIF)
+- ✅ Lazy load images (only load when visible)
+- ✅ Prevent Cumulative Layout Shift (CLS)
+- ✅ Generate responsive images
+- ✅ Blur placeholder while loading
+
+**Performance Impact**:
+
+- 60% smaller file sizes with WebP
+- 80% faster page loads with lazy loading
+- 0 CLS with proper sizing
+- Improved Core Web Vitals scores
+
+---
+
+## Basic Usage
+
+### Local Images
+
+```tsx
+import Image from "next/image";
+import profilePic from "../public/me.jpg";
+
+export default function Page() {
+  return (
+    <Image
+      src={profilePic}
+      alt="Profile picture"
+      // width and height automatically inferred
+    />
+  );
+}
+```
+
+**Benefits**:
+
+- Automatic width/height from import
+- Build-time optimization
+- No configuration needed
+
+### Remote Images
+
+```tsx
+import Image from "next/image";
+
+export default function Page() {
+  return (
+    <Image
+      src="https://example.com/photo.jpg"
+      alt="Photo"
+      width={800}
+      height={600}
+    />
+  );
+}
+```
+
+**Required**:
+
+- Must specify `width` and `height`
+- Must configure `remotePatterns` in `next.config.js`
+
+---
+
+## Configuring External Images
+
+### Using remotePatterns (Recommended)
+
+The `remotePatterns` property provides fine-grained control over external image sources:
+
+```javascript
+// next.config.js
 module.exports = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'example.com',
-        port: '',
-        pathname: '/account123/**',
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "/photo-**",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.example.com",
+        pathname: "/images/**",
       },
     ],
   },
 };
+```
 
-`} language="js" filename="nextConfig.ts"/>
+**Pattern Matching**:
 
+- `**` matches any number of path segments
+- `*` matches a single path segment
+- Exact strings match literally
 
-**Explanation:**
+### Using domains (Simple)
 
-- **`protocol`**: Specifies the protocol (`http` or `https`). Here, it is set to `https`.
-- **`hostname`**: Specifies the hostname of the external image source. In this case, it is `example.com`.
-- **`port`**: Specifies the port. Here, it is left as an empty string, meaning it defaults to the standard port for the protocol.
-- **`pathname`**: Specifies the pathname pattern. Here, it is `/account123/**`, meaning any path under `/account123` on `example.com` is allowed.
+For simpler cases, use the `domains` array:
 
-This configuration allows Next.js to optimize any image from `https://example.com/account123/**`.
-
-#### 2. The `domains` Property
-
-The `domains` property is used to specify a list of allowed domains for external images. This is simpler than `remotePatterns` and allows images from specified domains to be optimized.
-
-<CodeBlock code ={`
+```javascript
+// next.config.js
 module.exports = {
   images: {
-    domains: ['images.pexels.com'],
+    domains: ["images.unsplash.com", "images.pexels.com", "cdn.example.com"],
   },
 };
+```
 
-`} language ="js" filename="nextConfig.ts"/>
+**When to use**:
 
-**Explanation:**
+- Trust entire domain
+- Don't need path restrictions
+- Simpler configuration
 
-- **`domains`**: An array of strings representing allowed domains. Here, `images.pexels.com` is specified, meaning any image from `images.pexels.com` can be optimized.
+### Combining Both
 
-This configuration enables Next.js to optimize images from `images.pexels.com`.
-
-### Combining Both Configurations
-
-You can combine both `remotePatterns` and `domains` in your `next.config.js` to handle multiple sources of external images with different patterns and domains. Here’s an example:
-
-<CodeBlock code ={`
+```javascript
+// next.config.js
 module.exports = {
   images: {
+    // Specific patterns for some sources
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'example.com',
-        port: '',
-        pathname: '/account123/**',
+        protocol: "https",
+        hostname: "example.com",
+        pathname: "/account123/**",
       },
     ],
-    domains: ['images.pexels.com'],
+    // Full domain access for others
+    domains: ["images.pexels.com", "images.unsplash.com"],
   },
 };
-
-`} language="js" filename="nextConfig.ts"/>
-
-### Benefits of Optimizing External Images
-
-Using these configurations in Next.js, you can:
-
-- **Enhance Performance**: Optimized images load faster, improving overall site performance.
-- **Reduce Bandwidth**: Smaller, optimized images consume less bandwidth.
-- **Improve SEO**: Faster load times contribute to better search engine rankings.
-- **Ensure Security**: By specifying trusted domains and patterns, you reduce the risk of loading malicious content.
-
-### Conclusion
-
-Optimizing images is a crucial aspect of modern web development, and Next.js makes it easy to handle both local and external images efficiently. By configuring `remotePatterns` and `domains`, you can ensure that your application benefits from Next.js's powerful image optimization capabilities, enhancing performance and user experience.
-
-Integrate these configurations into your Next.js projects to take full advantage of optimized images from external sources, ensuring a faster, more secure, and user-friendly web application. Happy coding!
-
-### Further Reading
-
-- [Next.js Image Optimization Documentation](https://nextjs.org/docs/basic-features/image-optimization)
-- [Optimizing Images with the `next/image` Component](https://nextjs.org/docs/api-reference/next/image)
-- [Configuring Remote Patterns for External Images](https://nextjs.org/docs/api-reference/next.config.js/images#remotepatterns)
-- [Allowing External Domains for Image Optimization](https://nextjs.org/docs/api-reference/next.config.js/images#domains)
-
-By following this guide, you'll be well-equipped to optimize external images in your Next.js applications, ensuring a seamless and performant user experience.
+```
 
 ---
+
+## Advanced Image Optimization
+
+### 1. Responsive Images
+
+Automatically serve different sizes based on viewport:
+
+```tsx
+<Image
+  src="/photo.jpg"
+  alt="Responsive image"
+  width={1200}
+  height={800}
+  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+/>
+```
+
+**How it works**:
+
+- `sizes` tells browser which image size to load
+- Next.js generates multiple sizes automatically
+- Browser picks optimal size for viewport
+
+**Configure device sizes**:
+
+```javascript
+// next.config.js
+module.exports = {
+  images: {
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+};
+```
+
+### 2. Fill Container (Responsive)
+
+For images that should fill their container:
+
+```tsx
+<div className="relative w-full h-96">
+  <Image
+    src="/photo.jpg"
+    alt="Fill container"
+    fill
+    style={{ objectFit: "cover" }}
+  />
+</div>
+```
+
+**Use cases**:
+
+- Hero images
+- Background images
+- Card images
+- Gallery images
+
+### 3. Blur Placeholder
+
+Show a blurred preview while loading:
+
+```tsx
+// Option 1: Automatic blur (local images only)
+import profilePic from '../public/me.jpg';
+
+<Image
+  src={profilePic}
+  alt="Profile"
+  placeholder="blur"
+/>
+
+// Option 2: Custom blur data URL
+<Image
+  src="https://example.com/photo.jpg"
+  alt="Photo"
+  width={800}
+  height={600}
+  placeholder="blur"
+  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRg..."
+/>
+```
+
+**Generate blur data URL**:
+
+```typescript
+import { getPlaiceholder } from "plaiceholder";
+
+async function getBase64(imageUrl: string) {
+  try {
+    const res = await fetch(imageUrl);
+    const buffer = await res.arrayBuffer();
+    const { base64 } = await getPlaiceholder(Buffer.from(buffer));
+    return base64;
+  } catch (e) {
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+  }
+}
+```
+
+### 4. Priority Loading
+
+Load important images immediately (above the fold):
+
+```tsx
+<Image src="/hero.jpg" alt="Hero image" width={1920} height={1080} priority />
+```
+
+**When to use**:
+
+- Hero images
+- Logo
+- Above-the-fold content
+- LCP (Largest Contentful Paint) images
+
+### 5. Quality Control
+
+Adjust image quality (1-100):
+
+```tsx
+<Image
+  src="/photo.jpg"
+  alt="Photo"
+  width={800}
+  height={600}
+  quality={75} // Default is 75
+/>
+```
+
+**Recommendations**:
+
+- 75: Default, good balance
+- 85-90: High quality images
+- 60-70: Thumbnails, previews
+- 100: Avoid (huge file sizes)
+
+---
+
+## Image Formats
+
+Next.js automatically serves modern formats when supported:
+
+```javascript
+// next.config.js
+module.exports = {
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
+};
+```
+
+**Format Comparison**:
+
+| Format | Size        | Quality | Browser Support |
+| ------ | ----------- | ------- | --------------- |
+| JPEG   | 100%        | Good    | Universal       |
+| WebP   | 30% smaller | Better  | 95%+            |
+| AVIF   | 50% smaller | Best    | 70%+            |
+
+**Automatic Fallback**:
+
+- Browser requests AVIF
+- Falls back to WebP if unsupported
+- Falls back to original format
+
+---
+
+## Lazy Loading
+
+Images are lazy-loaded by default:
+
+```tsx
+// Lazy load (default)
+<Image src="/photo.jpg" alt="Photo" width={800} height={600} />
+
+// Disable lazy loading
+<Image
+  src="/hero.jpg"
+  alt="Hero"
+  width={1920}
+  height={1080}
+  loading="eager"
+/>
+```
+
+**How it works**:
+
+- Images load when they enter viewport
+- Reduces initial page load
+- Improves Time to Interactive (TTI)
+
+---
+
+## Preventing Layout Shift
+
+Always specify dimensions to prevent CLS:
+
+```tsx
+// Good: Prevents layout shift
+<Image
+  src="/photo.jpg"
+  alt="Photo"
+  width={800}
+  height={600}
+/>
+
+// Bad: Causes layout shift
+<img src="/photo.jpg" alt="Photo" />
+```
+
+**For responsive images**:
+
+```tsx
+<div className="relative aspect-video">
+  <Image src="/photo.jpg" alt="Photo" fill style={{ objectFit: "cover" }} />
+</div>
+```
+
+---
+
+## Real-World Examples
+
+### 1. Product Gallery
+
+```tsx
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+
+const images = ["/product-1.jpg", "/product-2.jpg", "/product-3.jpg"];
+
+export default function ProductGallery() {
+  const [selected, setSelected] = useState(0);
+
+  return (
+    <div>
+      {/* Main image */}
+      <div className="relative aspect-square mb-4">
+        <Image
+          src={images[selected]}
+          alt="Product"
+          fill
+          priority
+          style={{ objectFit: "cover" }}
+        />
+      </div>
+
+      {/* Thumbnails */}
+      <div className="grid grid-cols-3 gap-2">
+        {images.map((img, i) => (
+          <button
+            key={img}
+            onClick={() => setSelected(i)}
+            className="relative aspect-square"
+          >
+            <Image
+              src={img}
+              alt={`Product ${i + 1}`}
+              fill
+              style={{ objectFit: "cover" }}
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### 2. Blog Post with Optimized Images
+
+```tsx
+import Image from "next/image";
+import { getBase64 } from "@/lib/images";
+
+export default async function BlogPost({ post }) {
+  const blurDataURL = await getBase64(post.image);
+
+  return (
+    <article>
+      <div className="relative w-full h-96 mb-8">
+        <Image
+          src={post.image}
+          alt={post.title}
+          fill
+          priority
+          placeholder="blur"
+          blurDataURL={blurDataURL}
+          style={{ objectFit: "cover" }}
+        />
+      </div>
+
+      <h1>{post.title}</h1>
+      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+    </article>
+  );
+}
+```
+
+### 3. Avatar with Fallback
+
+```tsx
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+
+export default function Avatar({ src, name }: { src: string; name: string }) {
+  const [error, setError] = useState(false);
+
+  if (error) {
+    return (
+      <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+        {name[0]}
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={name}
+      width={40}
+      height={40}
+      className="rounded-full"
+      onError={() => setError(true)}
+    />
+  );
+}
+```
+
+---
+
+## Performance Best Practices
+
+### 1. Use Correct Sizes
+
+```tsx
+// Bad: Oversized image
+<Image src="/photo.jpg" width={2000} height={1500} />
+
+// Good: Appropriate size
+<Image src="/photo.jpg" width={800} height={600} />
+```
+
+### 2. Optimize Source Images
+
+Before uploading:
+
+- Resize to maximum needed size
+- Compress with tools like ImageOptim
+- Remove EXIF data
+- Use appropriate format
+
+### 3. Lazy Load Below Fold
+
+```tsx
+// Above fold: priority
+<Image src="/hero.jpg" alt="Hero" priority />
+
+// Below fold: lazy load (default)
+<Image src="/feature.jpg" alt="Feature" />
+```
+
+### 4. Use CDN for External Images
+
+```javascript
+// next.config.js
+module.exports = {
+  images: {
+    loader: "cloudinary",
+    path: "https://res.cloudinary.com/demo/image/upload/",
+  },
+};
+```
+
+---
+
+## Monitoring Performance
+
+### Lighthouse Metrics
+
+Check these metrics:
+
+- **LCP**: Largest Contentful Paint < 2.5s
+- **CLS**: Cumulative Layout Shift < 0.1
+- **FID**: First Input Delay < 100ms
+
+### Next.js Analytics
+
+```tsx
+// app/layout.tsx
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <SpeedInsights />
+      </body>
+    </html>
+  );
+}
+```
+
+---
+
+## Common Mistakes
+
+### 1. Not Specifying Dimensions
+
+```tsx
+// Bad: No dimensions
+<Image src="/photo.jpg" alt="Photo" />
+
+// Good: With dimensions
+<Image src="/photo.jpg" alt="Photo" width={800} height={600} />
+```
+
+### 2. Using Regular img Tag
+
+```tsx
+// Bad: No optimization
+<img src="/photo.jpg" alt="Photo" />
+
+// Good: Optimized
+<Image src="/photo.jpg" alt="Photo" width={800} height={600} />
+```
+
+### 3. Not Configuring Remote Patterns
+
+```tsx
+// This will error without configuration
+<Image
+  src="https://example.com/photo.jpg"
+  alt="Photo"
+  width={800}
+  height={600}
+/>
+```
+
+---
+
+## Conclusion
+
+Next.js Image component is a powerful tool for automatic image optimization. Key takeaways:
+
+1. **Always use `next/image`** instead of `<img>`
+2. **Configure `remotePatterns`** for external images
+3. **Specify dimensions** to prevent layout shift
+4. **Use `priority`** for above-the-fold images
+5. **Add blur placeholders** for better UX
+6. **Monitor performance** with Lighthouse
+
+With proper image optimization, you can achieve:
+
+- 60-80% smaller file sizes
+- Faster page loads
+- Better Core Web Vitals
+- Improved SEO rankings
+
+Start optimizing your images today! 🚀
+
+---
+
+## Further Reading
+
+- [Next.js Image Documentation](https://nextjs.org/docs/app/api-reference/components/image)
+- [Image Optimization Guide](https://nextjs.org/docs/app/building-your-application/optimizing/images)
+- [Web.dev - Optimize Images](https://web.dev/fast/#optimize-your-images)

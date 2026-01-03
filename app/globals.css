@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'prismjs/themes/prism-okaidia.css';
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -166,4 +168,14 @@ body {
 }
 .code-block {
   font-family: var(--font-ibm-plex-mono);
+}
+
+/* Fix Prism.js hydration errors - remove tabindex to prevent mismatch */
+pre[class*="language-"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+pre[class*="language-"]:focus {
+  outline: none;
 }
