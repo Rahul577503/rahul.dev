@@ -76,7 +76,7 @@ const Project: React.FC = () => {
         className="flex flex-col items-center justify-center -rotate-6"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 py-20 gap-5">
-        {projects.map((project, index) => (
+        {projects.map((project) => (
           <Link href={project.link} key={project.title}>
             <div className={cn("p-2 rounded-md ", project.background)}>
               <DirectionAwareHover

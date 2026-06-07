@@ -9,7 +9,6 @@ import {
   SiTailwindcss,
   SiGit,
   SiNextdotjs,
-  SiMarkdown,
   SiMui,
   SiNodedotjs,
   SiMongodb,
