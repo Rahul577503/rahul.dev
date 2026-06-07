@@ -136,6 +136,57 @@ export default function AboutPage() {
             ))}
           </nav>
         </section>
+
+        {/* Hire Me */}
+        <section className="space-y-4">
+          <div className="rounded-xl border border-border bg-secondary/40 px-5 py-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+              <span className="text-[0.8rem] font-medium text-emerald-700 tracking-wide uppercase">
+                Open to opportunities
+              </span>
+            </div>
+            <p className="text-[0.9rem] leading-relaxed text-muted-foreground">
+              I&apos;m currently open to full-time, contract, and freelance roles — full-stack, frontend, or platform engineering. If you&apos;re building something interesting, I&apos;d love to hear about it.
+            </p>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <a
+                href="/Rahul_Maurya_Resume.pdf"
+                download="Rahul_Maurya_Resume.pdf"
+                className="inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-80 transition-opacity"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download Resume
+              </a>
+              <a
+                href="/Rahul_Maurya_Resume.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                View Resume
+              </a>
+              <a
+                href="mailto:rahulmaurya109626@gmail.com"
+                className="text-sm text-muted-foreground underline decoration-from-font underline-offset-4 hover:text-foreground transition-colors"
+              >
+                rahulmaurya109626@gmail.com
+              </a>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
