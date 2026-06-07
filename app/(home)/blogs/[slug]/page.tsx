@@ -23,6 +23,12 @@ const components: CustomComponents = {
   CodeBlock,
   BoopButton,
   pre: Pre,
+  // Wrap tables so wide ones scroll horizontally instead of overflowing the page.
+  table: (props: React.HTMLAttributes<HTMLTableElement>) => (
+    <div className="table-wrapper">
+      <table {...props} />
+    </div>
+  ),
 };
 
 export async function generateStaticParams() {

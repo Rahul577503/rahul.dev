@@ -1,0 +1,457 @@
+---
+title: "Low Level Design: A Practitioner's Field Guide"
+date: "2026-06-07"
+description: "A deep, example-driven guide to Low Level Design — the cost-of-change mindset, SOLID, composition over inheritance, the pattern toolkit, code smells and refactors, concurrency, and a full worked design plus an interview framework you can reuse."
+image: "/img/low-level-design.svg"
+tags: ["Low Level Design", "Design Patterns", "SOLID", "Refactoring", "System Design"]
+---
+
+# Low Level Design: A Practitioner's Field Guide
+
+_Published on June 7, 2026_
+
+Most engineers learn Low Level Design backwards. They memorize the Gang of Four catalog, recite SOLID as an acronym, and still write a 2,000-line `OrderManager` that breaks every sprint. The catalog isn't the skill. The skill is a single instinct applied relentlessly:
+
+> **Good design minimizes the cost of change.** Working code is the floor, not the ceiling.
+
+This is a long, practical guide. We'll build a mental model, sharpen it with SOLID and composition, walk the pattern toolkit by the problems they solve, learn to *smell* bad design and refactor it, design a full system end-to-end, and finish with a repeatable interview framework. It's inspired by Himanshu Singour's reflective essay, [_How I Master Low Level Design_](https://medium.com/@himanshusingour7/how-i-master-low-level-design-0f61466c481b) — but goes a few layers deeper.
+
+---
+
+## HLD vs LLD in One Line
+
+**High Level Design** decides the boxes: services, databases, queues, how data flows between them. **Low Level Design** decides what lives *inside* a box: classes, their responsibilities, the interfaces between them, and how they're assembled. HLD keeps the system scalable; LLD keeps it *changeable*. This guide is entirely about the second.
+
+---
+
+## The Core Mental Model: Volatility and Seams
+
+Every codebase is a mix of two things:
+
+- **Stable** parts — core entities, domain rules, math, protocols. They rarely change.
+- **Volatile** parts — pricing, integrations, formatting, feature flags, anything driven by the business or the outside world. They change constantly.
+
+Almost all of LLD is one move repeated:
+
+> **Find the volatile part, isolate it behind an interface, and inject the concrete detail from outside.** That interface is a *seam* — a place where you can swap behavior without surgery.
+
+Everything below — SOLID, every pattern, every refactor — is a specific way to put a seam in the right place.
+
+---
+
+## Four Lenses for Judging Any Design
+
+Before patterns, learn to *measure*. Hold any class up to these four lenses:
+
+| Lens | Good | Bad |
+|------|------|-----|
+| **Cohesion** | A class does one job; its methods touch the same data | A "manager" that does ten unrelated things |
+| **Coupling** | Classes talk through small interfaces | A change here forces edits over there |
+| **Cardinality of change** | One requirement → one file edited | One requirement → shotgun edits everywhere |
+| **Testability** | You can test it in isolation with fakes | You need a real DB and network to test logic |
+
+If you can only remember one heuristic: **high cohesion, low coupling.** Everything else is a corollary.
+
+---
+
+## SOLID — Each Principle Is a Cure for a Smell
+
+SOLID is not five rules to recite; it's five smells and their antidotes.
+
+### S — Single Responsibility — *cures the God Class*
+
+A class should have exactly one reason to change. When `Invoice` both computes totals **and** renders PDFs, a tax change and a layout change collide in the same file.
+
+```ts
+class Invoice {
+  constructor(public items: LineItem[]) {}
+  total(): number {
+    return this.items.reduce((sum, i) => sum + i.price * i.qty, 0);
+  }
+}
+
+class InvoicePrinter {
+  print(invoice: Invoice): string {
+    return `Total: $${invoice.total().toFixed(2)}`;
+  }
+}
+```
+
+### O — Open/Closed — *cures the growing if/else ladder*
+
+Add behavior by adding code, not by editing a switch that grows forever.
+
+```ts
+interface Shape { area(): number; }
+
+class Circle implements Shape {
+  constructor(private r: number) {}
+  area() { return Math.PI * this.r ** 2; }
+}
+class Square implements Shape {
+  constructor(private side: number) {}
+  area() { return this.side ** 2; }
+}
+
+// A new shape is a new class. The code that consumes Shape never changes.
+const totalArea = (shapes: Shape[]) => shapes.reduce((s, x) => s + x.area(), 0);
+```
+
+### L — Liskov Substitution — *cures the leaky subclass*
+
+A subtype must work anywhere its base type is expected, with no nasty surprises. The textbook trap: `Square extends Rectangle`, then `setWidth` secretly mutates height and breaks every caller that assumed independence. If a subclass weakens a guarantee callers rely on, your hierarchy is wrong — prefer composition.
+
+### I — Interface Segregation — *cures the fat interface*
+
+Don't force a class to depend on methods it never calls. Split big interfaces into role-sized ones.
+
+```ts
+interface Reader { read(id: string): Document; }
+interface Writer { write(doc: Document): void; }
+
+// A viewer needs only Reader — it can't even see write/delete.
+class ReportViewer {
+  constructor(private store: Reader) {}
+}
+```
+
+### D — Dependency Inversion — *cures the hardwired dependency*
+
+High-level policy depends on an abstraction; the low-level detail is injected. Your checkout logic must not `import Stripe`.
+
+```ts
+interface PaymentGateway {
+  charge(amountCents: number, token: string): Promise<Receipt>;
+}
+
+class CheckoutService {
+  constructor(private gateway: PaymentGateway) {} // injected, not constructed
+  pay(cart: Cart, token: string) {
+    return this.gateway.charge(cart.totalCents(), token);
+  }
+}
+```
+
+> The thread through all five: **point code at interfaces, inject the concretes, keep changes local.**
+
+---
+
+## Composition Over Inheritance
+
+The most over-used tool in junior code is `extends`. Inheritance couples you to a base class's *entire* implementation and only models one axis of variation. Composition — building behavior by assembling small objects — is almost always more flexible.
+
+```ts
+// Inheritance explodes: FlyingDuck, RubberDuck, DecoyDuck, FlyingRubberDuck...
+// Composition: a Duck HAS-A behavior it can even swap at runtime.
+interface FlyBehavior { fly(): string; }
+class FlyWithWings implements FlyBehavior { fly() { return 'flap flap'; } }
+class CannotFly implements FlyBehavior { fly() { return '...'; } }
+
+class Duck {
+  constructor(private flying: FlyBehavior) {}
+  setFlying(b: FlyBehavior) { this.flying = b; }   // change at runtime
+  performFly() { return this.flying.fly(); }
+}
+```
+
+Rule of thumb: **use inheritance for "is-a" identity you'll never change; use composition for "has-a behavior" that varies.** When in doubt, compose.
+
+---
+
+## The Pattern Toolkit, Organized by Problem
+
+Patterns are answers. Learn the *question* each one answers and they stop being trivia.
+
+### Creational — "how do I create objects without hardcoding the choice?"
+
+- **Factory** — the decision of *which* class to build lives in one place.
+- **Builder** — assemble a complex object step by step (great for objects with many optional fields).
+- **Singleton** — exactly one instance with global access (use sparingly; it's a hidden global).
+
+```ts
+interface Notifier { send(to: string, body: string): void; }
+
+class NotifierFactory {
+  static create(channel: 'email' | 'sms' | 'push'): Notifier {
+    switch (channel) {
+      case 'email': return new EmailNotifier();
+      case 'sms':   return new SmsNotifier();
+      case 'push':  return new PushNotifier();
+    }
+  }
+}
+```
+
+### Structural — "how do I compose objects into bigger structures?"
+
+- **Adapter** — make an incompatible interface fit (wrap a legacy or third-party API).
+- **Decorator** — add responsibilities at runtime without subclassing.
+
+```ts
+// Decorator: layer behavior. Each wrapper is itself a Notifier.
+class RetryNotifier implements Notifier {
+  constructor(private inner: Notifier, private tries = 3) {}
+  send(to: string, body: string) {
+    for (let i = 0; i < this.tries; i++) {
+      try { return this.inner.send(to, body); } catch { /* retry */ }
+    }
+    throw new Error('all retries failed');
+  }
+}
+// new RetryNotifier(new EmailNotifier()) — retries for free, no Email changes.
+```
+
+### Behavioral — "how do I manage algorithms and communication?"
+
+- **Strategy** — swap interchangeable algorithms at runtime.
+- **Observer** — one event, many independent reactions, loosely coupled.
+- **State** — an object behaves differently depending on its internal state, without a giant switch.
+- **Command** — wrap an action as an object you can queue, log, or undo.
+
+```ts
+// Strategy: pick a rate-limiting algorithm at runtime.
+interface RateLimitStrategy { allow(key: string): boolean; }
+class TokenBucket implements RateLimitStrategy { allow(_: string) { /* ... */ return true; } }
+class SlidingWindow implements RateLimitStrategy { allow(_: string) { /* ... */ return true; } }
+
+class RateLimiter {
+  constructor(private strategy: RateLimitStrategy) {}
+  check(key: string) { return this.strategy.allow(key); }
+}
+```
+
+```ts
+// Observer: an order is placed once; many subscribers react.
+interface OrderObserver { onPlaced(order: Order): void; }
+
+class OrderService {
+  private observers: OrderObserver[] = [];
+  subscribe(o: OrderObserver) { this.observers.push(o); }
+  place(order: Order) {
+    // ...persist...
+    this.observers.forEach((o) => o.onPlaced(order)); // email, analytics, cache
+  }
+}
+```
+
+Every one of these is, underneath, the same seam-and-inject move from our mental model.
+
+---
+
+## Code Smells: Learn to Feel the Rot
+
+You'll refactor far more often than you'll design from scratch. Train your nose:
+
+| Smell | What it looks like | Refactor toward |
+|-------|--------------------|-----------------|
+| **God Class** | One class knows everything | Extract Class by responsibility |
+| **Shotgun Surgery** | One change edits many files | Move related logic together |
+| **Feature Envy** | A method uses another class's data more than its own | Move the method to that class |
+| **Primitive Obsession** | `string email`, `number cents` everywhere | Introduce value objects (`Email`, `Money`) |
+| **Long Parameter List** | `fn(a, b, c, d, e, f)` | Group into an object / Builder |
+| **Switch on Type** | `if (type === ...)` repeated | Replace Conditional with Polymorphism |
+
+The last one is the single highest-leverage refactor in LLD:
+
+```ts
+// Before — the conditional reappears everywhere
+function payout(employee: Employee): number {
+  if (employee.type === 'hourly')   return employee.hours * employee.rate;
+  if (employee.type === 'salaried') return employee.salary / 12;
+  throw new Error('unknown type');
+}
+
+// After — each type owns its rule; new types add a class, edit nothing
+interface Employee { monthlyPay(): number; }
+class Hourly implements Employee {
+  constructor(private hours: number, private rate: number) {}
+  monthlyPay() { return this.hours * this.rate; }
+}
+class Salaried implements Employee {
+  constructor(private salary: number) {}
+  monthlyPay() { return this.salary / 12; }
+}
+```
+
+---
+
+## A Full Worked Design: Parking Lot
+
+The classic. Watch the *process*, not just the answer — that's what an interviewer scores.
+
+**1. Clarify scope.** Multiple floors. Vehicle sizes (motorcycle, car, truck) map to spot sizes. Ticket on entry, fee on exit, fee depends on duration and vehicle type.
+
+**2. Identify entities and relationships.** A `ParkingLot` *has* floors (composition); a `Floor` *has* spots; a `Spot` may *hold* a `Vehicle`. Use enums for fixed sets.
+
+```ts
+enum VehicleType { Motorcycle, Car, Truck }
+enum SpotSize { Small, Medium, Large }
+
+abstract class Vehicle {
+  constructor(public readonly plate: string, public readonly type: VehicleType) {}
+}
+class Car extends Vehicle {
+  constructor(plate: string) { super(plate, VehicleType.Car); }
+}
+
+class ParkingSpot {
+  private vehicle: Vehicle | null = null;
+  constructor(public readonly id: string, public readonly size: SpotSize) {}
+
+  isFree() { return this.vehicle === null; }
+  fits(v: Vehicle): boolean {
+    const need = { [VehicleType.Motorcycle]: SpotSize.Small,
+                   [VehicleType.Car]: SpotSize.Medium,
+                   [VehicleType.Truck]: SpotSize.Large }[v.type];
+    return this.isFree() && this.size >= need;
+  }
+  park(v: Vehicle) { this.vehicle = v; }
+  vacate() { this.vehicle = null; }
+}
+```
+
+**3. Make the volatile parts seams.** Two things will change for sure: **how we pick a spot** and **how we price**. Those become Strategy interfaces, not hardcoded methods.
+
+```ts
+interface SpotAssignment { findSpot(floors: Floor[], v: Vehicle): ParkingSpot | null; }
+interface PricingStrategy { fee(ticket: Ticket): number; }
+
+class NearestFirst implements SpotAssignment {
+  findSpot(floors: Floor[], v: Vehicle) {
+    for (const f of floors) {
+      const spot = f.spots.find((s) => s.fits(v));
+      if (spot) return spot;
+    }
+    return null;
+  }
+}
+
+class HourlyPricing implements PricingStrategy {
+  private rate = { [VehicleType.Motorcycle]: 1, [VehicleType.Car]: 2, [VehicleType.Truck]: 4 };
+  fee(t: Ticket) {
+    const hours = Math.ceil((t.exitAt! - t.entryAt) / 3_600_000);
+    return hours * this.rate[t.vehicle.type];
+  }
+}
+```
+
+**4. Coordinate with a thin service.** It owns the workflow, delegates the decisions.
+
+```ts
+class ParkingLot {
+  constructor(
+    private floors: Floor[],
+    private assigner: SpotAssignment,
+    private pricing: PricingStrategy,
+  ) {}
+
+  enter(v: Vehicle): Ticket {
+    const spot = this.assigner.findSpot(this.floors, v);
+    if (!spot) throw new Error('lot full');
+    spot.park(v);
+    return new Ticket(v, spot, Date.now());
+  }
+
+  exit(ticket: Ticket): number {
+    ticket.exitAt = Date.now();
+    ticket.spot.vacate();
+    return this.pricing.fee(ticket);
+  }
+}
+```
+
+**5. Absorb a curveball.** Interviewer: *"Add premium spots that cost double, and let monthly subscribers park free."* Notice you change **nothing** in `ParkingLot`:
+
+- Premium pricing → a new `PricingStrategy` (or a `Decorator` over the existing one).
+- Subscribers → another `PricingStrategy` that returns `0`.
+
+That is the entire game: requirements arrive as **new classes injected at a seam**, not as edits to working code.
+
+---
+
+## Concurrency: The Part Interviews Love to Probe
+
+The Parking Lot above has a race: two cars can grab the same spot. LLD interviews increasingly ask about it. Know the vocabulary and the trade-offs:
+
+- **Optimistic** — let both try, detect the conflict on commit (version check / CAS), retry the loser. Great when contention is rare.
+- **Pessimistic** — lock the spot before assigning. Simpler to reason about, worse throughput.
+- **Idempotency** — design `enter()` so a retried request can't double-book.
+
+You don't need to implement a lock in the room; you need to *name the race and your strategy*. That signals seniority more than any pattern.
+
+---
+
+## Why Seams Make Testing Trivial
+
+Every interface you inject is also a test seam. Because `CheckoutService` depends on `PaymentGateway`, not Stripe, you test it with a fake — no network, no flake:
+
+```ts
+class FakeGateway implements PaymentGateway {
+  charged: number[] = [];
+  async charge(cents: number) { this.charged.push(cents); return { ok: true } as Receipt; }
+}
+
+// test: checkout charges the cart total exactly once — fast, deterministic.
+```
+
+If a class is hard to test, that's not a testing problem. It's a **design** problem telling you a dependency isn't behind a seam yet.
+
+---
+
+## UML Relationships, Decoded
+
+You'll sketch these on a whiteboard. Know the four arrows:
+
+- **Association** — "uses a." A `Driver` uses a `Car`.
+- **Aggregation** — "has a," independent lifetimes. A `Team` has `Players`; players outlive the team.
+- **Composition** — "owns a," shared lifetime. A `House` owns `Rooms`; destroy the house, the rooms go too.
+- **Inheritance** — "is a." A `Car` is a `Vehicle`. (Reach for it last.)
+
+---
+
+## A Reusable Interview Framework
+
+When you're handed *"design X,"* run this loop out loud — the narration is half the score:
+
+1. **Clarify & scope.** Pin down requirements and what's explicitly out of scope. Surface the *change sources*.
+2. **List entities.** Nouns become classes; fixed sets become enums.
+3. **Define relationships.** Association / aggregation / composition — and keep inheritance minimal.
+4. **Find the seams.** Which behaviors will vary? Make each a Strategy/interface.
+5. **Add a coordinator.** A thin service that owns the workflow and delegates decisions.
+6. **Stress-test extensibility.** Invite a new requirement and show it's a new class, not an edit.
+7. **Name the hard parts.** Concurrency, failure modes, idempotency, trade-offs.
+
+---
+
+## Don't Over-Correct: Anti-Patterns of "Good" Design
+
+Zeal is its own smell. Watch for:
+
+- **Premature abstraction** — an interface with one implementation forever is just indirection. Add the seam when the *second* case actually appears (the "Rule of Three").
+- **Pattern fever** — wrapping a 3-line function in a Factory + Strategy + Observer because you can.
+- **Anemic domain model** — entities that are just bags of getters/setters with all logic dumped in "services."
+- **Speculative generality** — building for a future that never arrives.
+
+Good design is the *cheapest* structure that keeps change local. Not the most clever one.
+
+---
+
+## Common Problems to Practice
+
+Design these out loud until the framework above is muscle memory: **Parking Lot, Elevator system, Rate Limiter, Splitwise, Tic-Tac-Toe / Chess, Notification service, Logging framework, Vending machine, BookMyShow seat booking, LRU cache, Snake & Ladder, Movie ticket pricing.**
+
+For each, the interviewer cares less about the perfect answer and more about: clear responsibilities, the right seams, and how gracefully your design bends when they throw a curveball.
+
+---
+
+## The Whole Thing in Three Sentences
+
+1. Working code is the floor; design is about keeping the **cost of change** low.
+2. The one move is: **find what varies, hide it behind an interface, inject the detail** — and patterns, SOLID, and clean tests all fall out of it.
+3. Practice on real, messy code and on classic problems until putting a seam in the right place is instinct, not effort.
+
+Start tomorrow with the scariest class you own. Find its change sources. Put one seam in. Repeat — that compounding is how design actually gets mastered.
+
+For the reflective essay that sparked this deeper dive, read Himanshu Singour's [_How I Master Low Level Design_](https://medium.com/@himanshusingour7/how-i-master-low-level-design-0f61466c481b).
+
+---

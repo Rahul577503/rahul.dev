@@ -5,6 +5,9 @@ description: "Learn Typescript with this cheatSheet"
 image: "https://img.freepik.com/free-photo/programming-background-with-person-working-with-codes-computer_23-2150010129.jpg?t=st=1717184113~exp=1717187713~hmac=33377f902a2205fe5e1688af56809e0a3525d04c21875d103acc5e5ed674677a&w=1480"
 ---
 
+TypeScript is a strongly typed superset of JavaScript that compiles down to plain JavaScript. The types only exist at compile time — they help your editor catch bugs, autocomplete code, and document intent, then disappear when the code runs in the browser or Node.
+
+This cheatsheet is a quick reference for the syntax you'll reach for most often. Skim it, bookmark it, and copy from it.
 
 ## Install
 
@@ -20,7 +23,13 @@ npm install -g typescript
 
 ## Compile
 
-To compile TypeScript files:
+To compile a single file to JavaScript:
+
+```bash
+tsc index.ts
+```
+
+To recompile automatically every time you save:
 
 ```bash
 tsc --watch
@@ -53,15 +62,23 @@ Use `tsconfig.json` to configure TypeScript. You can generate a config file with
 
 ```json
 {
-  "outDir": "./dist",
-  "rootDir": "./src",
-  "target": "es6"
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "sourceMap": true
+  }
 }
 ```
 
+**Tip:** `"strict": true` turns on all the strict type-checking options at once (including `noImplicitAny` and `strictNullChecks`). Always enable it on new projects — it catches the bugs TypeScript exists to catch.
+
 ## Basic Types
 
-<CodeBlock code={`
+```ts
 let number: number = 32;
 let string: string = 'John';
 let boolean = true;
@@ -77,19 +94,33 @@ let tupleArray: [string, number][] = [
   ['a', 1],
   ['b', 2]
 ];
-`} language="typescript" filename="types.ts"/>
+```
 
 ## Union
-<CodeBlock code ={`
+
+A union type (`|`) allows a value to be one of several types.
+
+```ts
 let union: string | number = 'a';
 union = 1;
+```
 
-`} language = 'ts' filename="union.ts"/>
+## Literal Types
 
+You can use exact values as types. Combined with unions, this is great for modeling a fixed set of allowed options.
+
+```ts
+let direction: 'left' | 'right' | 'up' | 'down';
+direction = 'left'; // ok
+// direction = 'forward'; // Error: not assignable
+
+type DiceRoll = 1 | 2 | 3 | 4 | 5 | 6;
+let roll: DiceRoll = 4;
+```
 
 ## Objects
 
-<CodeBlock code={`
+```ts
 type User = {
   name: string;
   age: number;
@@ -99,14 +130,11 @@ const user: User = {
   name: 'Jack',
   age: 32
 };
-
-`} language = 'ts' filename="objects.ts"/>
-<br/>
-
+```
 
 ## Functions
 
-<CodeBlock code ={`
+```ts
 function add(a: number, b: number): number {
   return a + b;
 }
@@ -116,13 +144,11 @@ const subtract = (a: number, b: number): number => a - b;
 function log(message: string | number): void {
   console.log(message);
 }
-`} language ="ts" filename="functions.ts"/>
-
-<br/>
+```
 
 ## Interfaces
 
-<CodeBlock code ={`
+```ts
 interface UserInterface {
   readonly id: number;
   name: string;
@@ -134,78 +160,108 @@ const user1: UserInterface = {
   name: 'John'
 };
 user1.age = 47;
+```
 
-`} language="ts" filename="Interfaces.ts"/>
-
-<br/>
+**`type` vs `interface`:** both can describe the shape of an object. Prefer `interface` for objects and classes you may want to extend or merge; reach for `type` when you need unions, tuples, or other shapes an interface can't express. In most day-to-day code they're interchangeable — pick one and stay consistent.
 
 ## Classes
 
-<CodeBlock code ={`
-
+```ts
 class Person {
   constructor(public id: number, public name: string) {}
 
   register() {
-    return \`\${this.name} is now registered\`;
+    return `${this.name} is now registered`;
   }
 }
 
 const person1 = new Person(1, 'Jack');
-`} language = "ts" filename="classes.ts"/>
-
-<br/>
+```
 
 ## Type Assertion
 
-<CodeBlock code ={`
+```ts
 let customerID: any = '123';
 let customerIDAsNumber = customerID as number;
 let customerIDAsNumber2 = <number>customerID;
+```
 
-`} language= "ts" filename="typeAssertion.ts"/>
+## unknown, never & null
 
+`unknown` is the type-safe counterpart of `any`: you can assign anything to it, but you must narrow it before you can use it. `never` represents a value that can never occur (e.g. a function that always throws). With `strictNullChecks` on, `null` and `undefined` must be handled explicitly.
+
+```ts
+let value: unknown = fetchData();
+// value.toUpperCase(); // Error: must narrow first
+if (typeof value === 'string') {
+  value.toUpperCase(); // ok, value is now string
+}
+
+function fail(message: string): never {
+  throw new Error(message);
+}
+
+let name: string | null = null;
+name = 'John';
+```
+
+## Optional Chaining & Nullish Coalescing
+
+`?.` short-circuits to `undefined` instead of throwing when a value is null/undefined. `??` provides a fallback only when the left side is `null` or `undefined` (unlike `||`, which also fires on `0`, `''`, and `false`).
+
+```ts
+const street = user?.address?.street;
+
+const count = inputCount ?? 0; // 0 stays 0, only null/undefined falls back
+```
+
+## Type Narrowing
+
+TypeScript narrows a union to a more specific type based on checks you write. This lets you safely branch on what a value actually is.
+
+```ts
+function format(value: string | number): string {
+  if (typeof value === 'number') {
+    return value.toFixed(2); // value is number here
+  }
+  return value.trim(); // value is string here
+}
+```
 
 ## Extending Classes (Subclasses)
 
-<CodeBlock code ={`
+```ts
 class Employee extends Person {
   constructor(id: number, name: string, public position: string) {
     super(id, name);
   }
 
   register() {
-    return \`\${this.name} is now registered as an employee\`\;
+    return `${this.name} is now registered as an employee`;
   }
 }
 
 const employee1 = new Employee(1, 'James', 'Developer');
-
-`} language="ts" filename="sublClass.ts"/>
-
-
-
-<br/>
+```
 
 ## Generics
-## Generics (allow us to create reusable components)
 
-`<T>` is a placeholder that allows to later define the type of the generic
+Generics let us write reusable components that work over many types instead of just one. `<T>` is a placeholder for a type that gets filled in when the function or class is used.
 
-<CodeBlock code ={`
-
+```ts
 function getId<T>(id: T): T {
   return id;
 }
 
 const numberId = getId<number>(1);
 const stringId = getId<string>('1');
-
-`} language ="ts" filename="generics.ts"/>
+```
 
 ## Enums
 
-<CodeBlock code ={`
+Enums let you give friendly names to a set of related constants. By default members are numbered from `0`, but you can assign string values for output that's easier to read and debug.
+
+```ts
 enum Color {
   Red,
   Green,
@@ -213,21 +269,25 @@ enum Color {
 }
 
 let color: Color = Color.Blue; // 2
-`} language ="ts" filename="enum.ts"/>
 
+// String enums
+enum Direction {
+  Up = 'UP',
+  Down = 'DOWN'
+}
+
+let move: Direction = Direction.Up; // 'UP'
+```
 
 ## TypeScript Docs
 
 - [Download TypeScript](https://www.typescriptlang.org/download)
 
-
 ## Pick and Omit
 
 Pick and Omit are utility types in TypeScript:
-<br/>
 
-<CodeBlock code ={`
-
+```ts
 interface User {
   id: number;
   name: string;
@@ -238,7 +298,45 @@ interface User {
 type Username = Pick<User, 'name' | 'lastName'>;
 
 type UserWithoutId = Omit<User, 'id'>;
+```
 
-`} language ="ts" filename="utilityTy.ts"/>
+## More Utility Types
+
+TypeScript ships several other built-in helpers that transform existing types so you don't have to redefine them by hand.
+
+```ts
+interface Todo {
+  title: string;
+  description: string;
+  done: boolean;
+}
+
+// All fields optional
+type PartialTodo = Partial<Todo>;
+
+// All fields required
+type RequiredTodo = Required<Todo>;
+
+// All fields read-only
+type ReadonlyTodo = Readonly<Todo>;
+
+// A map from keys to a value type
+type TodosById = Record<string, Todo>;
+```
+
+## Typing async / Promises
+
+An async function always returns a `Promise<T>`, where `T` is the resolved value type.
+
+```ts
+async function getUser(id: number): Promise<User> {
+  const res = await fetch(`/api/users/${id}`);
+  return res.json();
+}
+```
+
+## Wrapping Up
+
+That's the core of day-to-day TypeScript. The fastest way to get comfortable is to turn on `strict` mode, let the compiler complain, and follow its suggestions. When in doubt, the [official handbook](https://www.typescriptlang.org/docs/handbook/intro.html) and the [TypeScript Playground](https://www.typescriptlang.org/play) are excellent places to experiment.
 
 ---

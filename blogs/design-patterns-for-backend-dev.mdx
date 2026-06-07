@@ -21,7 +21,8 @@ Creational patterns focus on flexible and reusable object creation. They help yo
 
 The Singleton pattern ensures a class has only one instance and provides a global point of access to it. It’s perfect for resources like database connections or logging services in backend systems.
 
-<CodeBlock code={`class Singleton {
+```js
+class Singleton {
     static instance = null;
 
     constructor() {
@@ -40,7 +41,8 @@ The Singleton pattern ensures a class has only one instance and provides a globa
         console.log("Singleton instance is working!");
     }
 
-}`} language="js" filename="patterns.js"/>
+}
+```
 
 ```md
 | Singleton |
@@ -59,7 +61,8 @@ v
 
 This pattern defines an interface for creating objects but lets subclasses decide which class to instantiate. It’s ideal for creating different types of objects, like database queries, without hardcoding their classes.
 
-<CodeBlock code={`class DatabaseQuery {
+```js
+class DatabaseQuery {
     execute() {}
 }
 
@@ -81,7 +84,8 @@ if (type === 'sql') return new SQLQuery();
 if (type === 'nosql') return new NoSQLQuery();
 throw new Error("Unknown query type");
 }
-}`} language="js" filename="patterns.js"/>
+}
+```
 
 ```md
 +----------------+ +----------------+
@@ -113,7 +117,8 @@ Structural patterns deal with object composition and relationships, helping you 
 
 The Adapter pattern lets incompatible interfaces work together by converting one interface into another that a client expects. It’s great for integrating legacy systems or third-party APIs.
 
-<CodeBlock code={`class PaymentProcessor {
+```js
+class PaymentProcessor {
     processPayment(amount) {}
 }
 
@@ -133,7 +138,8 @@ this.legacySystem = legacySystem;
         this.legacySystem.makePayment(amount);
     }
 
-}`} language="js" filename="patterns.js"/>
+}
+```
 
 ```md
 +----------------+ +----------------+
@@ -154,7 +160,8 @@ this.legacySystem = legacySystem;
 
 The Facade pattern provides a simplified interface to a complex subsystem, hiding its intricacies. It’s ideal for coordinating multiple backend services or APIs.
 
-<CodeBlock code={`class PaymentService {
+```js
+class PaymentService {
     process() {
         console.log("Processing payment...");
     }
@@ -185,7 +192,8 @@ this.log = new LoggingService();
         this.log.log();
     }
 
-}`} language="js" filename="patterns.js"/>
+}
+```
 
 ```md
 +----------------+ +----------------+
@@ -216,7 +224,8 @@ Behavioral patterns focus on communication between objects, enabling flexible an
 
 The Observer pattern establishes a one-to-many dependency, notifying all dependent objects of state changes. It’s perfect for real-time updates in backend systems.
 
-<CodeBlock code={`class Subject {
+```js
+class Subject {
     constructor() {
         this.observers = [];
     }
@@ -241,7 +250,7 @@ this.name = name;
 }
 
     update(message) {
-        console.log(\`\${this.name} received news: \${message}\`);
+        console.log(`${this.name} received news: ${message}`);
     }
 
 }
@@ -251,7 +260,8 @@ setNews(news) {
 this.news = news;
 this.notifyObservers(news);
 }
-}`} language="js" filename="patterns.js"/>
+}
+```
 
 ```md
 +----------------+ +----------------+
@@ -273,7 +283,8 @@ this.notifyObservers(news);
 
 The Strategy pattern defines a family of algorithms, encapsulates each, and makes them interchangeable at runtime. It’s useful for backend logic needing flexible behavior, like sorting or pricing.
 
-<CodeBlock code={`class SortingStrategy {
+```js
+class SortingStrategy {
     sort(list) {}
 }
 
@@ -318,7 +329,8 @@ this.strategy = null;
         if (this.strategy) this.strategy.sort(list);
     }
 
-}`} language="js" filename="patterns.js"/>
+}
+```
 
 ```md
 +----------------+ +----------------+
@@ -345,7 +357,8 @@ Concurrency patterns manage multi-threaded or asynchronous operations, critical 
 
 The Thread Pool pattern reuses a pool of threads to execute tasks, avoiding the overhead of creating new threads. It’s essential for backend servers handling multiple requests.
 
-<CodeBlock code={`const { Worker, isMainThread, parentPort } = require('worker_threads');
+```js
+const { Worker, isMainThread, parentPort } = require('worker_threads');
 if (isMainThread) {
     const pool = [];
     for (let i = 0; i < 3; i++) {
@@ -354,7 +367,7 @@ if (isMainThread) {
 
     let taskId = 0;
     pool.forEach(worker => {
-        worker.postMessage({ task: \`Task-\${++taskId}\` });
+        worker.postMessage({ task: `Task-${++taskId}` });
         worker.on('message', (message) => {
             console.log(message);
         });
@@ -362,12 +375,13 @@ if (isMainThread) {
 
 } else {
 parentPort.on('message', (task) => {
-console.log(\`Executing \${task.task} on thread \${process.pid}\`);
+console.log(`Executing ${task.task} on thread ${process.pid}`);
 setTimeout(() => {
-parentPort.postMessage(\`Done: \${task.task}\`);
+parentPort.postMessage(`Done: ${task.task}`);
 }, 1000);
 });
-}`} language="js" filename="threadPool.js"/>
+}
+```
 
 ```md
 +----------------+
@@ -394,7 +408,8 @@ parentPort.postMessage(\`Done: \${task.task}\`);
 
 This pattern manages asynchronous results, allowing the program to continue while waiting for a result. It’s ideal for backend I/O operations or API calls.
 
-<CodeBlock code={`function asyncTask() {
+```js
+function asyncTask() {
     return new Promise((resolve) => {
         setTimeout(() => {
             resolve("Task completed!");
@@ -410,7 +425,7 @@ console.log("Result: " + result);
 }
 
 main();
-`} language="js" filename="patterns.js"/>
+```
 
 ```md
 +----------------+ +----------------+
@@ -440,7 +455,8 @@ Architectural patterns define the overall structure of software systems, ensurin
 
 MVC separates data (Model), user interface (View), and business logic (Controller). It’s widely used in backend and web development for clean, scalable code.
 
-<CodeBlock code={`class User {
+```js
+class User {
     constructor(name, age) {
         this.name = name;
         this.age = age;
@@ -453,7 +469,7 @@ MVC separates data (Model), user interface (View), and business logic (Controlle
 
 class UserView {
 displayUser(user) {
-console.log(\`User: \${user.getName()}, Age: \${user.getAge()}\`);
+console.log(`User: ${user.getName()}, Age: ${user.getAge()}`);
 }
 }
 
@@ -475,7 +491,8 @@ this.view = view;
         this.model = new User(this.model.getName(), age);
     }
 
-}`} language="js" filename="mvc.js"/>
+}
+```
 
 ```md
 +----------------+ +----------------+
@@ -499,7 +516,7 @@ this.view = view;
 
 Microservices build applications as independent, loosely coupled services. It’s ideal for scalable backend systems, especially in cloud environments.
 
-<CodeBlock code={`
+```js
 // User Service (Express.js example)
 const express = require('express');
 const app = express();
@@ -520,7 +537,7 @@ res.json(order);
 });
 
 orderApp.listen(3001, () => console.log('Order Service running on port 3001'));
-`} language="js" filename="patterns.js"/>
+```
 
 ```md
 +----------------+ +----------------+

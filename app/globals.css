@@ -99,6 +99,8 @@ body {
   font-size: 0.9375rem;
   line-height: 1.75;
   color: hsl(var(--muted-foreground));
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .mdx-content h1,
@@ -221,12 +223,19 @@ body {
   text-align: center;
 }
 
+.mdx-content .table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  -webkit-overflow-scrolling: touch;
+}
 .mdx-content table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
   margin: 0.75rem 0;
 }
+.mdx-content .table-wrapper > table { margin: 0; }
 .mdx-content th {
   text-align: left;
   font-weight: 600;
