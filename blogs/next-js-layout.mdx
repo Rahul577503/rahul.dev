@@ -1,643 +1,802 @@
 ---
-title: "Mastering Next.js Layouts: From Basics to Complex Architecture"
+title: "Next.js Layouts: The Expert Architecture Guide"
 date: "2026-01-03"
-description: "A comprehensive guide to Next.js layouts covering nested layouts, route groups, multiple layout patterns, and advanced architecture for complex applications. Learn how to build scalable, maintainable layout systems."
+description: "Go beyond the basics — learn how senior engineers structure Next.js layouts for SaaS platforms, dashboards, and multi-tenant apps. Covers route groups, parallel routes, streaming, and real industry patterns."
 image: "/img/nextjs-layout-hierarchy.png"
 tags: ["Next.js", "React", "Architecture", "Layouts", "App Router"]
 ---
 
-# Mastering Next.js Layouts: From Basics to Complex Architecture
+# Next.js Layouts: The Expert Architecture Guide
 
 _Published on January 3, 2026_
 
-Layouts are the backbone of any Next.js application. They define the structure, provide consistency, and enable code reuse across pages. In this comprehensive guide, we'll explore everything from basic layouts to complex multi-layout architectures that scale with your application.
-
-![Next.js Layout Hierarchy](/img/nextjs-layout-hierarchy.png)
+Most tutorials show you *what* a layout is. This guide shows you *how engineers actually use them* — in SaaS products, dashboards, multi-tenant platforms, and content sites. By the end you'll have a mental model for designing a layout hierarchy before writing a single line of code.
 
 ---
 
-## Understanding Next.js Layouts
+## The Mental Model First
 
-In Next.js 13+ with the App Router, layouts are special files that wrap your pages and persist across route changes. Unlike pages, layouts:
+Before any code, understand what layouts *actually do* in the App Router.
 
-- **Persist across navigation** - Don't re-render when switching routes
-- **Can be nested** - Create hierarchical layout structures
-- **Share state** - Maintain state across page transitions
-- **Are server components by default** - Optimize performance
+```
+  layout.tsx     → persists across route changes. State survives navigation.
+  template.tsx   → re-mounts on every route change. Fresh state each time.
+  page.tsx        → the unique content for that route.
+  loading.tsx     → instant Suspense boundary (streamed skeleton).
+  error.tsx       → error boundary for that segment.
+  not-found.tsx   → 404 for that segment.
+```
+
+The key insight: **layouts are persistent shells, pages are swappable content.**
+
+```
+  Navigating /dashboard → /dashboard/settings:
+  
+  ┌──────────────────────────────────────────┐
+  │  RootLayout          (never re-renders)  │
+  │  ┌────────────────────────────────────┐  │
+  │  │  DashboardLayout  (never re-renders│  │
+  │  │  ┌──────────────────────────────┐  │  │
+  │  │  │  page.tsx  ← only this swaps │  │  │
+  │  │  └──────────────────────────────┘  │  │
+  │  └────────────────────────────────────┘  │
+  └──────────────────────────────────────────┘
+```
+
+This persistence is both the power and the trap. If you put subscription state in a layout, it survives navigation. If you accidentally put per-page state in a layout, it leaks between pages.
 
 ---
 
-## Basic Layout Structure
+## Layout vs Template — When to Use Each
 
-### The Root Layout
-
-Every Next.js app starts with a root layout:
+```
+  layout.tsx                    template.tsx
+  ──────────────────            ──────────────────────
+  ✅ Sidebar state              ✅ Page enter animations
+  ✅ Auth check (server)        ✅ Per-page analytics ping
+  ✅ Navigation active state    ✅ form that must reset on nav
+  ✅ Shared data fetching       ✅ Scroll position reset
+  
+  Mount count:  1               Mount count:  1 per navigation
+```
 
 ```tsx
-// app/layout.tsx
-import { ReactNode } from "react";
-import "./globals.css";
+// template.tsx — re-mounts on every route change
+// This is how smooth page transitions work
+"use client";
+import { motion } from "framer-motion";
 
-export const metadata = {
-  title: "My App",
-  description: "Built with Next.js",
-};
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function Template({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        {/* Root layout wraps ALL pages */}
-        <header>Global Header</header>
-        <main>{children}</main>
-        <footer>Global Footer</footer>
-      </body>
-    </html>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
   );
 }
 ```
 
-**Key Points**:
+---
 
-- Must include `<html>` and `<body>` tags
-- Required at the root of your app
-- Cannot be a Client Component
-- Wraps all pages in your application
+## The Layout Hierarchy — How Nesting Works
+
+Every file in the `app/` directory follows the same render order. Understanding this tree is everything.
+
+```
+  app/
+  ├── layout.tsx          ← wraps EVERYTHING
+  ├── template.tsx        ← re-mounts on each navigation
+  ├── (home)/
+  │   ├── layout.tsx      ← wraps all (home) routes
+  │   ├── page.tsx        → /
+  │   ├── about/
+  │   │   └── page.tsx    → /about
+  │   └── blog/
+  │       ├── layout.tsx  ← wraps all blog routes
+  │       ├── page.tsx    → /blog
+  │       └── [slug]/
+  │           └── page.tsx→ /blog/my-post
+  └── dashboard/
+      ├── layout.tsx      ← wraps all dashboard routes
+      └── page.tsx        → /dashboard
+```
+
+**Render tree for `/blog/my-post`:**
+
+```
+  RootLayout
+  └── HomeLayout
+      └── BlogLayout
+          └── BlogPostPage   ← only this changes between posts
+```
+
+**Render tree for `/dashboard`:**
+
+```
+  RootLayout
+  └── DashboardLayout
+      └── DashboardPage
+```
+
+The layouts between these two routes are *completely different*. The root layout is the only shared ancestor.
 
 ---
 
-## Nested Layouts
+## Route Groups — The Organizing Pattern
 
-Nested layouts allow you to create hierarchical structures where each route segment can have its own layout.
-
-### File Structure
+Parentheses folders don't affect URLs. They let you **assign different layouts to different URL families** without polluting the URL.
 
 ```
-app/
-├── layout.tsx          # Root layout
-├── page.tsx            # Home page
-├── (marketing)/
-│   ├── layout.tsx      # Marketing layout
-│   ├── about/
-│   │   └── page.tsx
-│   └── contact/
-│       └── page.tsx
-└── dashboard/
-    ├── layout.tsx      # Dashboard layout
-    ├── page.tsx
-    ├── settings/
-    │   └── page.tsx
-    └── profile/
-        └── page.tsx
+  app/
+  ├── (marketing)/          ← URL prefix: none
+  │   ├── layout.tsx        ← marketing shell (navbar + footer)
+  │   ├── page.tsx          → /
+  │   ├── pricing/
+  │   │   └── page.tsx      → /pricing
+  │   └── blog/
+  │       └── page.tsx      → /blog
+  │
+  ├── (auth)/               ← URL prefix: none
+  │   ├── layout.tsx        ← centered card, no navbar
+  │   ├── login/
+  │   │   └── page.tsx      → /login
+  │   └── register/
+  │       └── page.tsx      → /register
+  │
+  └── (app)/                ← URL prefix: none
+      ├── layout.tsx        ← sidebar + topbar, auth required
+      └── dashboard/
+          └── page.tsx      → /dashboard
 ```
 
-### Marketing Layout
+Three completely different shells. Zero URL nesting. This is how every production SaaS is structured.
 
 ```tsx
-// app/(marketing)/layout.tsx
-import { ReactNode } from "react";
-import MarketingNav from "./components/MarketingNav";
-
-export default function MarketingLayout({ children }: { children: ReactNode }) {
+// app/(auth)/layout.tsx — the login/register shell
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="marketing-container">
-      <MarketingNav />
-      <div className="content">{children}</div>
-      <footer className="marketing-footer">© 2026 My Company</footer>
-    </div>
-  );
-}
-```
-
-### Dashboard Layout
-
-```tsx
-// app/dashboard/layout.tsx
-import { ReactNode } from "react";
-import Sidebar from "./components/Sidebar";
-import DashboardHeader from "./components/DashboardHeader";
-
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="dashboard-layout">
-      <DashboardHeader />
-      <div className="dashboard-content">
-        <Sidebar />
-        <main className="dashboard-main">{children}</main>
-      </div>
-    </div>
-  );
-}
-```
-
-**Result**:
-
-- `/about` uses Root + Marketing layouts
-- `/dashboard` uses Root + Dashboard layouts
-- Each section has its own navigation and structure
-
----
-
-## Route Groups for Multiple Layouts
-
-Route groups let you organize routes without affecting the URL structure.
-
-![Multiple Layouts Pattern](/img/multiple-layouts-pattern.png)
-
-### Syntax: `(folderName)`
-
-Folders wrapped in parentheses are **route groups** - they don't appear in the URL.
-
-```
-app/
-├── (auth)/
-│   ├── layout.tsx      # Auth layout
-│   ├── login/
-│   │   └── page.tsx    # URL: /login
-│   └── register/
-│       └── page.tsx    # URL: /register
-├── (marketing)/
-│   ├── layout.tsx      # Marketing layout
-│   ├── page.tsx        # URL: /
-│   └── about/
-│       └── page.tsx    # URL: /about
-└── (app)/
-    ├── layout.tsx      # App layout
-    └── dashboard/
-        └── page.tsx    # URL: /dashboard
-```
-
-### Auth Layout Example
-
-```tsx
-// app/(auth)/layout.tsx
-import { ReactNode } from "react";
-
-export default function AuthLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">Welcome Back</h1>
+    <div className="min-h-screen grid place-items-center bg-muted/30">
+      <div className="w-full max-w-sm px-4">
+        <div className="mb-8 text-center">
+          <Logo />
         </div>
-        <div className="bg-white p-8 rounded-lg shadow-lg">{children}</div>
+        <div className="rounded-xl border bg-card p-8 shadow-sm">
+          {children}
+        </div>
       </div>
     </div>
   );
 }
 ```
 
-**Benefits**:
+```tsx
+// app/(app)/layout.tsx — the authenticated app shell
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
 
-- Clean URLs (no `/auth/` prefix)
-- Separate layouts for different app sections
-- Better code organization
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const session = await getSession();
+  
+  // Server-side auth guard — no client-side flicker
+  if (!session) redirect("/login");
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <AppSidebar user={session.user} />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <AppTopbar user={session.user} />
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
+```
 
 ---
 
-## Complex Layout Architecture
+## Industry Pattern 1: SaaS Platform
 
-For large applications, you need a scalable layout system. Here's a production-ready pattern:
+This is the layout architecture behind tools like Linear, Vercel, Notion.
 
-### 1. Layout Composition Pattern
+```
+  app/
+  ├── (marketing)/
+  │   ├── layout.tsx              ← marketing shell
+  │   ├── page.tsx                → / (landing)
+  │   ├── pricing/page.tsx        → /pricing
+  │   └── changelog/page.tsx      → /changelog
+  │
+  ├── (auth)/
+  │   ├── layout.tsx              ← centered auth card
+  │   ├── login/page.tsx          → /login
+  │   ├── register/page.tsx       → /register
+  │   └── forgot-password/page.tsx→ /forgot-password
+  │
+  ├── (app)/
+  │   ├── layout.tsx              ← auth guard + app shell
+  │   ├── onboarding/
+  │   │   ├── layout.tsx          ← full-screen stepper layout
+  │   │   └── [step]/page.tsx     → /onboarding/workspace
+  │   └── [org]/                  ← org slug in URL: /acme/...
+  │       ├── layout.tsx          ← org context + sidebar
+  │       ├── page.tsx            → /acme
+  │       ├── projects/
+  │       │   ├── page.tsx        → /acme/projects
+  │       │   └── [id]/
+  │       │       ├── layout.tsx  ← project nav tabs
+  │       │       ├── page.tsx    → /acme/projects/abc
+  │       │       └── settings/page.tsx → /acme/projects/abc/settings
+  │       └── settings/
+  │           ├── layout.tsx      ← settings sidebar nav
+  │           ├── page.tsx        → /acme/settings
+  │           └── billing/page.tsx→ /acme/settings/billing
+  │
+  └── (admin)/
+      ├── layout.tsx              ← admin guard (role check)
+      └── dashboard/page.tsx      → /admin/dashboard
+```
+
+The org-level layout is where the **multi-tenant** magic happens:
 
 ```tsx
-// app/components/layouts/BaseLayout.tsx
-import { ReactNode } from "react";
+// app/(app)/[org]/layout.tsx
+import { notFound } from "next/navigation";
+import { getOrg, getUserMembership } from "@/lib/db";
+import { OrgContext } from "./context";
 
-interface BaseLayoutProps {
-  children: ReactNode;
-  header?: ReactNode;
-  sidebar?: ReactNode;
-  footer?: ReactNode;
-}
-
-export default function BaseLayout({
+export default async function OrgLayout({
   children,
-  header,
-  sidebar,
-  footer,
-}: BaseLayoutProps) {
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ org: string }>;
+}) {
+  const { org: slug } = await params;
+  
+  // Validate org exists
+  const org = await getOrg(slug);
+  if (!org) notFound();
+
+  // Check user membership
+  const membership = await getUserMembership(org.id);
+  if (!membership) notFound(); // 404 rather than 403 — security best practice
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {header && <header className="sticky top-0 z-50">{header}</header>}
-
-      <div className="flex-1 flex">
-        {sidebar && (
-          <aside className="w-64 border-r bg-gray-50">{sidebar}</aside>
-        )}
-
-        <main className="flex-1 overflow-auto">{children}</main>
+    <OrgContext.Provider value={{ org, membership }}>
+      <div className="flex h-full">
+        <OrgSidebar org={org} membership={membership} />
+        <div className="flex-1 overflow-auto">{children}</div>
       </div>
-
-      {footer && <footer className="border-t">{footer}</footer>}
-    </div>
-  );
-}
-```
-
-### 2. Specialized Layouts Using Composition
-
-```tsx
-// app/(app)/layout.tsx
-import BaseLayout from "@/components/layouts/BaseLayout";
-import AppHeader from "./components/AppHeader";
-import AppSidebar from "./components/AppSidebar";
-
-export default function AppLayout({ children }: { children: ReactNode }) {
-  return (
-    <BaseLayout header={<AppHeader />} sidebar={<AppSidebar />}>
-      {children}
-    </BaseLayout>
-  );
-}
-```
-
-```tsx
-// app/(marketing)/layout.tsx
-import BaseLayout from "@/components/layouts/BaseLayout";
-import MarketingHeader from "./components/MarketingHeader";
-import MarketingFooter from "./components/MarketingFooter";
-
-export default function MarketingLayout({ children }: { children: ReactNode }) {
-  return (
-    <BaseLayout header={<MarketingHeader />} footer={<MarketingFooter />}>
-      {children}
-    </BaseLayout>
+    </OrgContext.Provider>
   );
 }
 ```
 
 ---
 
-## Advanced Patterns
+## Industry Pattern 2: Content / Blog Platform
 
-### 1. Conditional Layouts
+How sites like Medium, Hashnode, or your own portfolio structure layouts:
 
-Show different layouts based on user state:
+```
+  app/
+  ├── (site)/
+  │   ├── layout.tsx              ← site shell (nav + footer)
+  │   ├── page.tsx                → / (home + recent posts)
+  │   └── [username]/
+  │       ├── layout.tsx          ← author profile sidebar
+  │       ├── page.tsx            → /rahul (author home)
+  │       └── [slug]/
+  │           ├── layout.tsx      ← article shell (progress bar, ToC)
+  │           └── page.tsx        → /rahul/my-post
+  │
+  └── (studio)/
+      ├── layout.tsx              ← CMS/editor shell
+      └── posts/
+          ├── page.tsx            → /studio/posts (list)
+          ├── new/page.tsx        → /studio/posts/new
+          └── [id]/
+              └── edit/page.tsx   → /studio/posts/abc/edit
+```
+
+The article layout with a reading progress bar:
 
 ```tsx
-// app/(app)/layout.tsx
-import { auth } from "@/lib/auth";
-import AdminLayout from "./components/AdminLayout";
-import UserLayout from "./components/UserLayout";
+// app/(site)/[username]/[slug]/layout.tsx
+"use client";
+import { useEffect, useState } from "react";
 
-export default async function AppLayout({ children }: { children: ReactNode }) {
-  const session = await auth();
+export default function ArticleLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [progress, setProgress] = useState(0);
 
-  if (session?.user?.role === "admin") {
-    return <AdminLayout>{children}</AdminLayout>;
-  }
+  useEffect(() => {
+    const update = () => {
+      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      setProgress((scrollTop / (scrollHeight - clientHeight)) * 100);
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
 
-  return <UserLayout>{children}</UserLayout>;
+  return (
+    <>
+      {/* Reading progress bar */}
+      <div
+        className="fixed top-0 left-0 z-50 h-0.5 bg-foreground transition-all duration-100"
+        style={{ width: `${progress}%` }}
+      />
+      {children}
+    </>
+  );
 }
 ```
 
-### 2. Parallel Routes
+---
 
-Display multiple pages in the same layout simultaneously:
+## Industry Pattern 3: Analytics Dashboard
+
+Nested layouts with data co-location — how Vercel Analytics, Posthog, or Datadog-style dashboards are structured:
 
 ```
-app/
-└── dashboard/
-    ├── layout.tsx
-    ├── @analytics/
-    │   └── page.tsx
-    ├── @team/
-    │   └── page.tsx
-    └── page.tsx
+  app/(app)/
+  └── dashboard/
+      ├── layout.tsx              ← date-range picker, global filters
+      ├── page.tsx                → /dashboard (overview)
+      ├── analytics/
+      │   ├── layout.tsx          ← analytics-specific nav
+      │   ├── page.tsx            → /dashboard/analytics
+      │   └── [report]/
+      │       └── page.tsx        → /dashboard/analytics/funnel
+      └── settings/
+          ├── layout.tsx          ← settings sidebar
+          └── page.tsx            → /dashboard/settings
+```
+
+The filter state lives in the URL so it's shareable:
+
+```tsx
+// app/(app)/dashboard/layout.tsx
+import { DateRangePicker } from "@/components/DateRangePicker";
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // Filters live in URL → shareable, no prop-drilling
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <DateRangePicker />   {/* Updates URL query params */}
+      </div>
+      {children}
+    </div>
+  );
+}
+```
+
+---
+
+## Parallel Routes — Multiple Pages, One Layout
+
+Parallel routes render multiple independent page segments in a single layout simultaneously. The `@` prefix marks a slot.
+
+```
+  dashboard/
+  ├── layout.tsx
+  ├── @overview/
+  │   └── page.tsx     ← independent segment
+  ├── @activity/
+  │   └── page.tsx     ← independent segment
+  └── page.tsx
+```
+
+```
+  Layout receives all slots as props:
+  
+  ┌──────────────────────────────────────────────┐
+  │  DashboardLayout                             │
+  │  ┌─────────────────┐  ┌─────────────────┐   │
+  │  │  @overview      │  │  @activity      │   │
+  │  │  - has its own  │  │  - has its own  │   │
+  │  │    loading.tsx  │  │    loading.tsx  │   │
+  │  │    error.tsx    │  │    error.tsx    │   │
+  │  │  - fetches      │  │  - fetches      │   │
+  │  │    independently│  │    independently│   │
+  │  └─────────────────┘  └─────────────────┘   │
+  └──────────────────────────────────────────────┘
 ```
 
 ```tsx
 // app/dashboard/layout.tsx
 export default function DashboardLayout({
   children,
-  analytics,
-  team,
+  overview,
+  activity,
 }: {
-  children: ReactNode;
-  analytics: ReactNode;
-  team: ReactNode;
+  children: React.ReactNode;
+  overview: React.ReactNode;
+  activity: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-12 gap-4">
-      <div className="col-span-8">{children}</div>
-      <div className="col-span-4">
-        <div className="mb-4">{analytics}</div>
-        <div>{team}</div>
+    <div className="grid grid-cols-3 gap-6">
+      <div className="col-span-2">
+        {overview}         {/* streams in independently */}
+      </div>
+      <div className="col-span-1">
+        {activity}         {/* streams in independently */}
       </div>
     </div>
   );
 }
 ```
 
-### 3. Intercepting Routes
+**Why it matters:** each slot has its own `loading.tsx` and `error.tsx`. A slow activity feed won't block the overview. A crashed widget won't blank the whole dashboard. This is the pattern behind every production dashboard.
 
-Show modals while preserving URL:
+---
+
+## Intercepting Routes — Modals with Shareable URLs
+
+Open a photo in a modal. Share the URL. Recipient lands on the full photo page directly.
 
 ```
-app/
-└── photos/
-    ├── [id]/
-    │   └── page.tsx        # /photos/1
-    └── (..)photos/
-        └── [id]/
-            └── page.tsx    # Modal when navigating from another page
+  app/
+  └── photos/
+      ├── [id]/
+      │   └── page.tsx              ← /photos/1 (full page)
+      └── @modal/
+          └── (.)photos/
+              └── [id]/
+                  └── page.tsx      ← /photos/1 (modal if navigated from gallery)
+```
+
+```
+  ┌─────────────────────────────────────────┐
+  │  Photos Gallery (soft nav → shows modal)│
+  │                                         │
+  │  [photo] [photo] [photo]  ← click       │
+  │               ↓                         │
+  │  ┌──────────────────────────────────┐   │
+  │  │          MODAL overlay           │   │
+  │  │  URL: /photos/42                 │   │
+  │  │  (gallery still visible behind)  │   │
+  │  └──────────────────────────────────┘   │
+  └─────────────────────────────────────────┘
+  
+  Direct URL visit /photos/42 → full page (no modal)
 ```
 
 ```tsx
-// app/(..)photos/[id]/page.tsx
+// app/@modal/(.)photos/[id]/page.tsx
 import Modal from "@/components/Modal";
-import PhotoDetail from "@/components/PhotoDetail";
+import Photo from "@/components/Photo";
 
-export default function PhotoModal({ params }: { params: { id: string } }) {
+export default async function PhotoModal({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const photo = await getPhoto(id);
+
   return (
     <Modal>
-      <PhotoDetail id={params.id} />
+      <Photo photo={photo} />
     </Modal>
   );
 }
 ```
 
----
-
-## Layout Best Practices
-
-### 1. Keep Layouts Simple
-
 ```tsx
-// Good: Focused layout
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="dashboard">
-      <Sidebar />
-      <main>{children}</main>
-    </div>
-  );
-}
-
-// Bad: Too much logic in layout
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const [data, setData] = useState();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Complex data fetching
-  }, []);
-
-  // Lots of business logic...
-
-  return <div>{/* ... */}</div>;
-}
-```
-
-**Solution**: Move complex logic to components or hooks.
-
-### 2. Use Server Components by Default
-
-```tsx
-// app/dashboard/layout.tsx - Server Component
-import { getUser } from "@/lib/db";
-
-export default async function DashboardLayout({
+// app/layout.tsx — receives modal slot
+export default function RootLayout({
   children,
+  modal,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
+  modal: React.ReactNode;
 }) {
-  const user = await getUser(); // Server-side data fetching
-
   return (
-    <div>
-      <Header user={user} />
-      {children}
-    </div>
-  );
-}
-```
-
-### 3. Client Components When Needed
-
-```tsx
-// app/dashboard/layout.tsx
-import ClientSidebar from "./components/ClientSidebar";
-
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return (
-    <div>
-      {/* Client component for interactivity */}
-      <ClientSidebar />
-      {children}
-    </div>
-  );
-}
-```
-
-```tsx
-// app/dashboard/components/ClientSidebar.tsx
-"use client";
-
-import { useState } from "react";
-
-export default function ClientSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
-
-  return (
-    <aside className={collapsed ? "w-16" : "w-64"}>
-      <button onClick={() => setCollapsed(!collapsed)}>Toggle</button>
-      {/* Sidebar content */}
-    </aside>
-  );
-}
-```
-
-### 4. Metadata in Layouts
-
-```tsx
-// app/dashboard/layout.tsx
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: {
-    template: "%s | Dashboard",
-    default: "Dashboard",
-  },
-  description: "Manage your account",
-};
-
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return <div>{children}</div>;
-}
-```
-
-Now pages inherit this metadata:
-
-```tsx
-// app/dashboard/settings/page.tsx
-export const metadata = {
-  title: "Settings", // Becomes "Settings | Dashboard"
-};
-```
-
----
-
-## Real-World Example: Multi-Tenant SaaS
-
-Here's a complete layout architecture for a SaaS application:
-
-```
-app/
-├── layout.tsx                    # Root layout
-├── (public)/
-│   ├── layout.tsx                # Public layout
-│   ├── page.tsx                  # Landing page
-│   ├── pricing/
-│   │   └── page.tsx
-│   └── about/
-│       └── page.tsx
-├── (auth)/
-│   ├── layout.tsx                # Auth layout
-│   ├── login/
-│   │   └── page.tsx
-│   └── register/
-│       └── page.tsx
-├── (app)/
-│   ├── layout.tsx                # App layout
-│   ├── [workspace]/
-│   │   ├── layout.tsx            # Workspace layout
-│   │   ├── dashboard/
-│   │   │   └── page.tsx
-│   │   ├── projects/
-│   │   │   ├── page.tsx
-│   │   │   └── [id]/
-│   │   │       └── page.tsx
-│   │   └── settings/
-│   │       └── page.tsx
-│   └── workspaces/
-│       └── page.tsx              # Workspace selector
-└── (admin)/
-    ├── layout.tsx                # Admin layout
-    └── dashboard/
-        └── page.tsx
-```
-
-### Root Layout
-
-```tsx
-// app/layout.tsx
-import { Inter } from "next/font/google";
-import { Providers } from "./providers";
-import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
-
-export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
+    <html lang="en">
+      <body>
+        {children}
+        {modal}    {/* null when not intercepted, modal when intercepted */}
       </body>
     </html>
   );
 }
 ```
 
-### Workspace Layout (Multi-Tenant)
+This pattern powers: Twitter photo lightboxes, Airbnb listing modals, Figma file preview panels.
+
+---
+
+## Server vs Client — The Layout Boundary
+
+This is the #1 architectural decision in each layout. Get it wrong and you'll fight Next.js instead of leveraging it.
+
+```
+  Server Component layout:            Client Component layout:
+  ──────────────────────────          ─────────────────────────────
+  ✅ async/await (data fetch)         ✅ useState, useEffect
+  ✅ Direct DB/filesystem access      ✅ Browser APIs
+  ✅ Zero JS shipped to client        ✅ Event handlers
+  ✅ Auth checks server-side          ✅ Real-time subscriptions
+  ❌ No useState/useEffect            ❌ No async data fetching
+  ❌ No browser APIs                  ❌ No direct DB access
+```
+
+**The pattern:** layouts are server components by default. Push client interactivity as far down the tree as possible.
 
 ```tsx
-// app/(app)/[workspace]/layout.tsx
-import { notFound } from "next/navigation";
-import { getWorkspace } from "@/lib/db";
-import WorkspaceSidebar from "./components/WorkspaceSidebar";
-import WorkspaceHeader from "./components/WorkspaceHeader";
+// app/dashboard/layout.tsx — Server Component (no "use client")
+import { getSession } from "@/lib/auth";
+import { ClientSidebar } from "./ClientSidebar"; // client boundary here
 
-export default async function WorkspaceLayout({
+export default async function DashboardLayout({
   children,
-  params,
 }: {
-  children: ReactNode;
-  params: { workspace: string };
+  children: React.ReactNode;
 }) {
-  const workspace = await getWorkspace(params.workspace);
-
-  if (!workspace) {
-    notFound();
-  }
+  // ✅ Direct server data access in a layout
+  const session = await getSession();
 
   return (
-    <div className="h-screen flex flex-col">
-      <WorkspaceHeader workspace={workspace} />
-
-      <div className="flex-1 flex overflow-hidden">
-        <WorkspaceSidebar workspace={workspace} />
-
-        <main className="flex-1 overflow-auto p-6">{children}</main>
-      </div>
+    <div className="flex h-screen">
+      {/* 
+        ClientSidebar handles collapse toggle (useState).
+        But the layout itself stays a Server Component.
+        session is passed as a prop — serialized across the boundary.
+      */}
+      <ClientSidebar user={session.user} />
+      <main className="flex-1 overflow-auto">{children}</main>
     </div>
+  );
+}
+```
+
+```tsx
+// app/dashboard/ClientSidebar.tsx
+"use client";
+import { useState } from "react";
+
+export function ClientSidebar({ user }: { user: User }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <aside
+      className={`transition-all ${collapsed ? "w-16" : "w-64"}`}
+    >
+      <button onClick={() => setCollapsed((c) => !c)}>
+        {collapsed ? "→" : "←"}
+      </button>
+      {!collapsed && <UserMenu user={user} />}
+    </aside>
   );
 }
 ```
 
 ---
 
-## Performance Optimization
+## Streaming Layouts — Show Shell Instantly
 
-### 1. Streaming with Suspense
+Without streaming: user waits for all data before seeing anything.
+With streaming: shell renders immediately, data pops in as it resolves.
+
+```
+  Without streaming:
+  
+  [─────── wait for all data ───────────] [render entire page]
+  
+  With streaming + Suspense:
+  
+  [shell instant] [data A resolves] [data B resolves] [data C resolves]
+       ↑                  ↑                 ↑                 ↑
+   navbar loads       sidebar loads    main content       chart loads
+   immediately          (200ms)           (400ms)           (600ms)
+```
+
+```tsx
+// app/dashboard/page.tsx — streaming with independent Suspense boundaries
+import { Suspense } from "react";
+import { MetricsSkeleton, ActivitySkeleton } from "@/components/skeletons";
+
+export default function DashboardPage() {
+  return (
+    <div className="grid gap-6">
+      {/* Each Suspense boundary streams independently */}
+      <Suspense fallback={<MetricsSkeleton />}>
+        <MetricsCards />       {/* async server component */}
+      </Suspense>
+
+      <div className="grid grid-cols-2 gap-6">
+        <Suspense fallback={<ActivitySkeleton />}>
+          <RecentActivity />   {/* async server component */}
+        </Suspense>
+
+        <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-muted" />}>
+          <QuickStats />       {/* async server component */}
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+// Each of these fetches its own data — no waterfall
+async function MetricsCards() {
+  const metrics = await getMetrics();  // Only this component waits
+  return <div>{/* render metrics */}</div>;
+}
+```
+
+---
+
+## Metadata — Cascading Titles
+
+Metadata in layouts sets the template. Pages override with their specific title.
+
+```
+  RootLayout:      { title: { template: "%s | Acme", default: "Acme" } }
+  DashboardLayout: { title: { template: "%s | Dashboard · Acme" } }
+  SettingsPage:    { title: "Settings" }
+  
+  Result: "Settings | Dashboard · Acme"
+```
+
+```tsx
+// app/layout.tsx
+export const metadata: Metadata = {
+  title: {
+    template: "%s | Acme",
+    default: "Acme",           // Used when page has no title
+  },
+  description: "Project management for fast teams",
+  metadataBase: new URL("https://acme.com"),
+};
+
+// app/(app)/dashboard/layout.tsx
+export const metadata: Metadata = {
+  title: {
+    template: "%s | Dashboard",  // Nested template
+  },
+};
+
+// app/(app)/dashboard/settings/page.tsx
+export const metadata: Metadata = {
+  title: "Settings",             // Final: "Settings | Dashboard"
+};
+```
+
+---
+
+## Performance Patterns
+
+### Prefetch on Hover
+
+```tsx
+// Sidebar navigation — prefetch on hover for instant transitions
+import Link from "next/link";
+
+function NavItem({ href, label }: { href: string; label: string }) {
+  return (
+    // Next.js <Link> prefetches on hover by default in production
+    <Link
+      href={href}
+      prefetch={true}   // explicit for clarity
+      className="nav-item"
+    >
+      {label}
+    </Link>
+  );
+}
+```
+
+### Layout Segment Config
 
 ```tsx
 // app/dashboard/layout.tsx
-import { Suspense } from "react";
-import Sidebar from "./components/Sidebar";
-import { UserMenu } from "./components/UserMenu";
-
-export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="dashboard">
-      <header>
-        <Suspense fallback={<div>Loading...</div>}>
-          <UserMenu />
-        </Suspense>
-      </header>
-
-      <div className="content">
-        <Sidebar />
-        <main>{children}</main>
-      </div>
-    </div>
-  );
-}
+// Control caching and runtime at the layout level
+export const dynamic = "force-dynamic";  // never cache (user-specific data)
+export const revalidate = 3600;          // revalidate every hour
+export const runtime = "edge";           // run on edge network
 ```
 
-### 2. Loading States
+### Avoid Prop Drilling with Layout Context
 
 ```tsx
-// app/dashboard/loading.tsx
-export default function DashboardLoading() {
-  return (
-    <div className="animate-pulse">
-      <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-      <div className="h-64 bg-gray-200 rounded"></div>
-    </div>
-  );
-}
-```
+// app/(app)/[org]/context.tsx
+import { createContext, useContext } from "react";
 
-### 3. Error Boundaries
+type OrgContextValue = {
+  org: Org;
+  membership: Membership;
+};
 
-```tsx
-// app/dashboard/error.tsx
-"use client";
+const OrgContext = createContext<OrgContextValue | null>(null);
 
-export default function DashboardError({
-  error,
-  reset,
+export function OrgProvider({
+  value,
+  children,
 }: {
-  error: Error;
-  reset: () => void;
+  value: OrgContextValue;
+  children: React.ReactNode;
 }) {
+  return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
+}
+
+// Used anywhere inside the [org] subtree
+export function useOrg() {
+  const ctx = useContext(OrgContext);
+  if (!ctx) throw new Error("useOrg must be used within OrgProvider");
+  return ctx;
+}
+```
+
+---
+
+## Common Mistakes
+
+### 1. Auth in Middleware AND Layout — Pick One
+
+```tsx
+// Bad: auth check in both middleware.ts and layout.tsx
+// This is redundant and can cause subtle bugs
+
+// Good: middleware for auth redirects (fast, edge)
+// layout.tsx for data fetching based on auth
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get("token");
+  if (!token) return NextResponse.redirect("/login");
+}
+
+// Then in layout — fetch user data (not auth check again)
+export default async function AppLayout({ children }) {
+  const user = await getCurrentUser(); // already know they're authed
+  return <Shell user={user}>{children}</Shell>;
+}
+```
+
+### 2. Fetching in Layout What Should Be in Page
+
+```tsx
+// Bad: layout fetches page-specific data
+// Now every route in this layout re-fetches this on navigation
+export default async function DashboardLayout({ children }) {
+  const stats = await getDashboardStats(); // ← belongs in the page
+  return <div><Stats data={stats} />{children}</div>;
+}
+
+// Good: layout fetches layout-scope data only
+export default async function DashboardLayout({ children }) {
+  const user = await getUser();         // ← layout-scope: needed for sidebar
+  return <Sidebar user={user}>{children}</Sidebar>;
+}
+```
+
+### 3. "use client" on the Layout Itself
+
+```tsx
+// Bad: entire layout becomes client-side
+"use client";
+export default function Layout({ children }) { ... }
+
+// Good: only the interactive part is client-side
+// Server layout → client component leaf
+export default function Layout({ children }) {
   return (
-    <div className="p-4">
-      <h2>Something went wrong!</h2>
-      <button onClick={reset}>Try again</button>
+    <div>
+      <ThemeToggle />    {/* "use client" lives in here */}
+      {children}
     </div>
   );
 }
@@ -645,117 +804,70 @@ export default function DashboardError({
 
 ---
 
-## Testing Layouts
+## The Layout Decision Checklist
 
-```tsx
-// __tests__/layouts/DashboardLayout.test.tsx
-import { render, screen } from "@testing-library/react";
-import DashboardLayout from "@/app/dashboard/layout";
+Before building any new layout, answer these:
 
-describe("DashboardLayout", () => {
-  it("renders children", () => {
-    render(
-      <DashboardLayout>
-        <div>Test Content</div>
-      </DashboardLayout>
-    );
-
-    expect(screen.getByText("Test Content")).toBeInTheDocument();
-  });
-
-  it("renders sidebar", () => {
-    render(
-      <DashboardLayout>
-        <div>Content</div>
-      </DashboardLayout>
-    );
-
-    expect(screen.getByRole("complementary")).toBeInTheDocument();
-  });
-});
-```
+- [x] Does this group of routes need a shared shell (nav, sidebar)?
+- [x] Does this shell need server data (auth, user, org)?
+- [x] Which parts need client interactivity (collapse, theme, modals)?
+- [x] Does this layout need to auth-guard a route group?
+- [x] Should any slots be independent (parallel routes)?
+- [x] Do any navigations need to intercept into a modal?
+- [x] What metadata template does this layout define?
+- [ ] Have I kept layout data at layout-scope (not page-scope)?
+- [ ] Is the server/client boundary as far down the tree as possible?
 
 ---
 
-## Common Pitfalls and Solutions
+## The Full Architecture at a Glance
 
-### 1. Layout Re-rendering
-
-**Problem**: Layout re-renders on every navigation
-
-```tsx
-// Bad: Creates new objects on every render
-export default function Layout({ children }: { children: ReactNode }) {
-  const config = { theme: "dark" }; // New object every time
-
-  return <ThemeProvider config={config}>{children}</ThemeProvider>;
-}
+```
+  app/
+  ├── layout.tsx          ← html/body, fonts, providers (Server)
+  ├── template.tsx        ← page transitions (Client)
+  │
+  ├── (marketing)/        ← public marketing shell
+  │   ├── layout.tsx      ← Navbar + Footer (Server)
+  │   ├── page.tsx
+  │   └── pricing/page.tsx
+  │
+  ├── (auth)/             ← centered card, no nav
+  │   ├── layout.tsx      ← AuthShell (Server)
+  │   ├── login/
+  │   └── register/
+  │
+  ├── (app)/              ← authenticated zone
+  │   ├── layout.tsx      ← auth guard + redirect (Server)
+  │   ├── onboarding/
+  │   │   └── layout.tsx  ← stepper shell (Server)
+  │   └── [org]/
+  │       ├── layout.tsx  ← org guard + sidebar (Server + OrgProvider)
+  │       ├── @modal/     ← intercepting modal slot
+  │       ├── projects/
+  │       │   └── [id]/
+  │       │       ├── layout.tsx  ← project tabs (Server)
+  │       │       └── @details/   ← parallel detail panel
+  │       └── settings/
+  │           └── layout.tsx  ← settings nav (Server)
+  │
+  └── (admin)/
+      └── layout.tsx      ← role guard (Server)
 ```
 
-**Solution**: Memoize or move outside component
-
-```tsx
-// Good: Stable reference
-const config = { theme: "dark" };
-
-export default function Layout({ children }: { children: ReactNode }) {
-  return <ThemeProvider config={config}>{children}</ThemeProvider>;
-}
-```
-
-### 2. Client/Server Boundary
-
-**Problem**: Using client hooks in server layout
-
-```tsx
-// Bad: Can't use useState in server component
-export default function Layout({ children }: { children: ReactNode }) {
-  const [state, setState] = useState(); // Error!
-  return <div>{children}</div>;
-}
-```
-
-**Solution**: Extract to client component
-
-```tsx
-// app/layout.tsx - Server Component
-import ClientWrapper from "./components/ClientWrapper";
-
-export default function Layout({ children }: { children: ReactNode }) {
-  return <ClientWrapper>{children}</ClientWrapper>;
-}
-```
-
-```tsx
-// app/components/ClientWrapper.tsx
-"use client";
-
-export default function ClientWrapper({ children }: { children: ReactNode }) {
-  const [state, setState] = useState();
-  // Client-side logic here
-  return <div>{children}</div>;
-}
-```
+This structure handles: marketing, auth, multi-tenant app, nested resources, modals, parallel panels, and admin — all with the right layout at the right level, server components by default, client components pushed to the leaves.
 
 ---
 
-## Conclusion
+## Summary
 
-Mastering Next.js layouts is essential for building scalable applications. Key takeaways:
+Next.js layouts are not just "wrappers around pages." They are the primary tool for:
 
-1. **Start simple** - Use basic layouts for small apps
-2. **Use route groups** - Organize complex applications
-3. **Compose layouts** - Build reusable layout components
-4. **Leverage server components** - Optimize performance
-5. **Plan your architecture** - Design layout hierarchy upfront
+1. **Route group isolation** — different shells for marketing, auth, and app without URL pollution
+2. **Server-side auth** — guard routes at the layout level with no client flicker
+3. **Multi-tenant context** — validate org/workspace and provide context to all child routes
+4. **Parallel rendering** — independent slots with their own loading/error states
+5. **Modal routing** — shareable URLs that render as modals when navigated, full pages when linked directly
+6. **Streaming** — ship the shell instantly, stream content as it resolves
 
-With these patterns, you can build maintainable, performant layout systems that scale from simple blogs to complex multi-tenant SaaS applications.
-
----
-
-## Further Reading
-
-- [Next.js Layouts Documentation](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts)
-- [Route Groups](https://nextjs.org/docs/app/building-your-application/routing/route-groups)
-- [Parallel Routes](https://nextjs.org/docs/app/building-your-application/routing/parallel-routes)
-- [Intercepting Routes](https://nextjs.org/docs/app/building-your-application/routing/intercepting-routes)
+The engineers who get the most out of Next.js are the ones who design the layout hierarchy *before* writing any component code. Draw the tree first. The code follows naturally.

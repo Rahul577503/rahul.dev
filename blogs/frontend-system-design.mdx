@@ -1,0 +1,893 @@
+---
+title: "Frontend System Design: The Complete Architecture Guide"
+date: "2026-06-07"
+description: "A comprehensive, interview-ready reference for designing scalable, performant, and maintainable frontend systems — covering rendering strategies, state management, caching, performance, and real-world architecture patterns."
+image: "/img/front-end-system-design.svg"
+tags: ["System Design", "Architecture", "Performance", "React", "Frontend"]
+---
+
+# Frontend System Design: The Complete Architecture Guide
+
+_Published on June 7, 2026_
+
+Frontend system design is the discipline of structuring a client application so it stays **fast, reliable, and easy to change** as features, users, and teams grow. This guide covers everything — from requirements to architecture, rendering to real-time, performance to resilience.
+
+---
+
+## The RADIO Framework
+
+The single biggest mistake in a system design discussion is jumping straight to libraries. A strong answer walks through a predictable sequence so nothing important gets skipped. The **RADIO** framework gives you that structure.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    RADIO Framework                      │
+├──────────────────┬──────────────────────────────────────┤
+│  R - Requirements│ What it must do + constraints        │
+│  A - Architecture│ Components, boundaries, data flow    │
+│  D - Data model  │ Entities, shape, normalization       │
+│  I - Interface   │ API contracts, protocols, payloads   │
+│  O - Optimizations│ Perf, a11y, resilience, scale       │
+└──────────────────┴──────────────────────────────────────┘
+```
+
+### Functional vs Non-Functional Requirements
+
+**Functional** requirements describe *what* the system does — "users can filter the table", "chart updates every 5 seconds."
+
+**Non-functional** requirements describe *quality attributes* — this is where senior-level thinking lives:
+
+| Attribute | Key Questions |
+|-----------|---------------|
+| Performance | LCP < 2.5s? INP < 200ms? |
+| Scalability | Holds up as data & team grow? |
+| Accessibility | Keyboard operable? WCAG 2.1 AA? |
+| Internationalization | RTL support? Text expansion? |
+| Device support | Mobile-first? Low-end devices? |
+| Security | XSS, CSRF, safe token storage? |
+| Maintainability | Clear boundaries? Testable? |
+
+> **Interview tip:** Spend the first 5 minutes clarifying requirements out loud. Stating "we want LCP under 2.5s on 3G" shapes every later decision and signals seniority.
+
+---
+
+## Architecture Patterns
+
+Architecture is about drawing the right *boundaries* — high cohesion (related things live together) + low coupling (unrelated things don't depend on each other).
+
+### Component-Based Architecture
+
+The foundation of every modern frontend. The UI is a tree of composable, reusable components — each owns its markup, style, and behavior.
+
+```
+          App
+         /   \
+      Header  Main
+      /  \    /  \
+   Logo  Nav Card  Card
+              |
+           Button
+```
+
+Components communicate through **props down, events up**. This makes UI predictable and testable in isolation.
+
+### Container / Presentational Split
+
+```
+┌─────────────────────────────────────────┐
+│           Application Layer             │
+│  ┌──────────────────────────────────┐   │
+│  │  Container (Smart) Component     │   │
+│  │  - Fetches data                  │   │
+│  │  - Holds state                   │   │
+│  │  - Wires things together         │   │
+│  └────────────────┬─────────────────┘   │
+│                   │ plain data          │
+│  ┌────────────────▼─────────────────┐   │
+│  │  Presentational (Dumb) Component │   │
+│  │  - Receives props                │   │
+│  │  - Renders UI                    │   │
+│  │  - Raises events                 │   │
+│  └──────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+```
+
+In modern React this is expressed with custom hooks feeding pure components:
+
+```typescript
+// Logic layer — the "smart" part
+function useUserProfile(id: string) {
+  return useQuery({
+    queryKey: ["user", id],
+    queryFn: () => fetchUser(id),
+  });
+}
+
+// View layer — pure render, no fetching
+function UserProfile({ name, avatar, bio }: UserProps) {
+  return (
+    <div className="profile">
+      <img src={avatar} alt={name} />
+      <h2>{name}</h2>
+      <p>{bio}</p>
+    </div>
+  );
+}
+
+// Wired together at the container level
+function UserProfileContainer({ id }: { id: string }) {
+  const { data, isLoading } = useUserProfile(id);
+  if (isLoading) return <Skeleton />;
+  return <UserProfile {...data} />;
+}
+```
+
+### Feature-Sliced Design (FSD)
+
+FSD scales well for large apps. Instead of grouping by *type* (`components/`, `hooks/`, `utils/`), it groups by *feature* and enforces one-directional dependencies.
+
+```
+src/
+├── app/        ← providers, routing, global styles
+├── pages/      ← route-level compositions
+│   └── dashboard/
+├── widgets/    ← self-contained UI blocks
+│   └── MetricsChart/
+├── features/   ← user-facing actions
+│   └── FilterPanel/
+├── entities/   ← business domain objects
+│   └── user/
+└── shared/     ← reusable, business-agnostic
+    └── ui/
+```
+
+**Core rule:** a layer may only import from layers *below* it. This kills circular dependencies.
+
+```
+app → pages → widgets → features → entities → shared
+ ↑_______________________________________________|
+         FORBIDDEN: no upward imports
+```
+
+### Micro-Frontends
+
+Extend microservice thinking to the browser — split a large app into independently deployed pieces.
+
+```
+┌──────────────────────────────────────────────┐
+│              Shell (Host App)                │
+│  ┌──────────────┐  ┌──────────────────────┐  │
+│  │  Team Alpha  │  │     Team Beta        │  │
+│  │  (Checkout)  │  │   (Product Catalog)  │  │
+│  │  Remote MFE  │  │     Remote MFE       │  │
+│  └──────────────┘  └──────────────────────┘  │
+│         Module Federation at runtime         │
+└──────────────────────────────────────────────┘
+```
+
+| Approach | How it works |
+|---|---|
+| Build-time packages | Simple but couples release cycles |
+| iframes | Strong isolation, weak UX |
+| Web Components | Framework-agnostic |
+| Module Federation | Share remote modules at runtime — dominant modern approach |
+| Server-side composition | Edge stitches HTML fragments |
+
+> **Trade-off:** Micro-frontends buy team autonomy at the cost of duplicated dependencies, harder shared state, and consistency challenges. Don't use them to solve a code-organization problem that modules would solve cheaply.
+
+---
+
+## Rendering Strategies
+
+Where and when HTML is generated is one of the most consequential frontend decisions. It directly drives load performance, SEO, and infrastructure cost.
+
+```
+                    THE RENDERING SPECTRUM
+                    
+  ← More server work                    More client work →
+  
+┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────────┐
+│   SSG   │  │   ISR   │  │   SSR   │  │     CSR     │
+│ Build   │  │Build +  │  │ Per-req │  │  In browser │
+│  time   │  │ Regen   │  │  HTML   │  │  after JS   │
+└─────────┘  └─────────┘  └─────────┘  └─────────────┘
+  Blog         Ecomm        News feed     Dashboard
+  Docs         Product      Auth page     Admin tool
+```
+
+| Strategy | HTML Built | Best For | Trade-off |
+|---|---|---|---|
+| **CSR** | In browser | Auth-gated dashboards | Slow first paint, weak SEO |
+| **SSR** | Server, per-request | SEO-critical dynamic pages | Server cost, needs hydration |
+| **SSG** | At build time | Rarely changing content | Rebuild to update |
+| **ISR** | Build + timer/on-demand | Large sites needing freshness | Brief staleness possible |
+
+**Decision rule:**
+- Static content → SSG/ISR
+- Per-request + SEO → SSR
+- Behind auth, SEO irrelevant → CSR
+- Real apps mix strategies per route
+
+### Streaming & React Server Components
+
+```
+  Traditional SSR:  [─────────────── wait ──────────────→] [render]
+  
+  Streaming SSR:    [shell]──[chunk 1]──[chunk 2]──[chunk 3]
+                      ↑
+                   User sees this immediately
+                   
+  RSC (Server):    Component → rendered on server → zero JS shipped
+  RSC (Client):    Component → hydrated → interactive
+```
+
+React Server Components render parts of the tree on the server and ship **zero JS** for them. Only the rendered result goes to the browser.
+
+### Hydration & the Islands Model
+
+Hydration = attaching event listeners to server-rendered HTML. Full-page hydration is expensive.
+
+```
+  Full hydration (expensive):
+  ┌──────────────────────────────────┐
+  │  [hydrate entire page] ←── huge JS
+  └──────────────────────────────────┘
+  
+  Islands architecture (Astro):
+  ┌─────────────────────────────────────┐
+  │  Static HTML (free)                 │
+  │  ┌──────┐   ┌─────────┐  ┌──────┐  │
+  │  │island│   │ island  │  │island│  │←── small, targeted JS
+  │  └──────┘   └─────────┘  └──────┘  │
+  └─────────────────────────────────────┘
+```
+
+---
+
+## State Management
+
+State is the biggest source of frontend complexity. The key skill is **categorizing state correctly**.
+
+### The Five Categories
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    STATE MAP                            │
+├───────────────────┬──────────────────────────────────── │
+│  Local UI state   │  useState — lives in component      │
+│  Global UI state  │  Context / Zustand — theme, auth    │
+│  Server cache     │  React Query / SWR — API data       │
+│  URL state        │  Query params — filters, pagination │
+│  Form state       │  React Hook Form — fields, errors   │
+└───────────────────┴─────────────────────────────────────┘
+```
+
+### Client State vs Server State
+
+This distinction is **critical**:
+
+```
+  Client state:                Server state:
+  ┌──────────────────┐         ┌──────────────────────┐
+  │ - Owned locally  │         │ - Owned remotely     │
+  │ - Always "fresh" │         │ - Shared across users│
+  │ - Sidebar open?  │         │ - Can go stale       │
+  │ - Modal visible? │         │ - Needs caching      │
+  └──────────────────┘         │ - Needs invalidation │
+  → useState / Zustand         └──────────────────────┘
+                                → React Query / SWR
+```
+
+Putting server data into Redux forces you to re-implement caching, loading, and invalidation by hand. Use the right tool.
+
+### Pattern Comparison
+
+```typescript
+// ❌ Wrong: server data in Redux
+const store = { users: [], loading: false, error: null };
+// Now you manually manage cache expiry, refetching, deduplication...
+
+// ✅ Right: server data in React Query
+function UserList() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+    staleTime: 5 * 60 * 1000, // 5 min cache
+  });
+  // caching, dedup, background refetch — all free
+}
+
+// ✅ Right: UI state in local state
+function Dropdown() {
+  const [open, setOpen] = useState(false);
+  // ...
+}
+
+// ✅ Right: filters in the URL
+function ProductList() {
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
+  // Shareable, bookmarkable, survives refresh
+}
+```
+
+**Rule of thumb:** Keep state as local as possible. Lift only when genuinely shared. Push to URL when shareable. Never put API data in a global client store.
+
+---
+
+## Data Fetching & Caching
+
+### Fetching Strategies
+
+```
+  Fetch-on-render (waterfall problem):
+  
+  Mount → Fetch A → A resolves → Mount B → Fetch B → B resolves
+  ─────────────────────────────────────────────────────────────→ time
+
+  Render-as-you-fetch (modern ideal):
+  
+  Route change → Fetch A + Fetch B simultaneously
+                     ↓
+               Render with Suspense as data arrives
+```
+
+```typescript
+// Fetch-on-render — causes waterfalls
+function Parent() {
+  const { data: user } = useQuery(["user"], fetchUser);
+  return user ? <Posts userId={user.id} /> : <Spinner />;
+}
+
+// Render-as-you-fetch — parallel
+function prefetchUserAndPosts(id: string) {
+  queryClient.prefetchQuery(["user", id], fetchUser);
+  queryClient.prefetchQuery(["posts", id], fetchPosts);
+}
+// Call prefetchUserAndPosts on hover/route change
+```
+
+### Caching Layers
+
+```
+  Request
+     │
+     ▼
+┌──────────────────────────────────────────────────┐
+│  1. Memory cache (React Query)  — ms latency      │
+│     └─ miss                                       │
+│  2. Service Worker cache        — sub-ms offline  │
+│     └─ miss                                       │
+│  3. HTTP cache (browser)        — check ETag      │
+│     └─ miss                                       │
+│  4. CDN edge cache              — ~10ms           │
+│     └─ miss                                       │
+│  5. Origin server               — full round-trip │
+└──────────────────────────────────────────────────┘
+```
+
+**Key concepts:**
+
+- **Cache invalidation** — when to discard stale data
+- **Stale-while-revalidate** — serve stale instantly, refetch in background
+- **Optimistic updates** — update UI before server confirms, roll back on failure
+
+```typescript
+// Optimistic update pattern
+const mutation = useMutation({
+  mutationFn: updateTodo,
+  onMutate: async (newTodo) => {
+    // Cancel outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ["todos"] });
+    
+    // Snapshot current value
+    const previous = queryClient.getQueryData(["todos"]);
+    
+    // Optimistically update
+    queryClient.setQueryData(["todos"], (old) =>
+      old.map((t) => (t.id === newTodo.id ? newTodo : t))
+    );
+    
+    return { previous };
+  },
+  onError: (err, newTodo, ctx) => {
+    // Roll back on failure
+    queryClient.setQueryData(["todos"], ctx.previous);
+  },
+});
+```
+
+### Pagination Approaches
+
+| Approach | How | Best For | Watch-out |
+|---|---|---|---|
+| Offset | `?page=2&limit=20` | Simple lists | Can skip/duplicate if data changes |
+| Cursor | `?after=cursor_xyz` | Infinite scroll, large/changing lists | Harder to jump to page N |
+| Virtualization | Render only visible rows | Thousands of rows | DOM height calculations |
+
+```typescript
+// Virtualized list — only renders visible rows
+import { useVirtualizer } from "@tanstack/react-virtual";
+
+function HugeTable({ rows }: { rows: Row[] }) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 48,
+  });
+
+  return (
+    <div ref={parentRef} style={{ height: "600px", overflow: "auto" }}>
+      <div style={{ height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map((item) => (
+          <Row key={item.key} data={rows[item.index]} />
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## Performance & Core Web Vitals
+
+Google's Core Web Vitals are the standard measurable performance targets.
+
+```
+  ┌─────────────────────────────────────────────────────────┐
+  │                  Core Web Vitals                        │
+  ├──────────┬────────────────────────────┬─────────────────┤
+  │  LCP     │  Largest Contentful Paint  │  Target: <2.5s  │
+  │          │  When largest element loads│                 │
+  ├──────────┼────────────────────────────┼─────────────────┤
+  │  INP     │  Interaction to Next Paint │ Target: <200ms  │
+  │          │  Delay between input+paint │                 │
+  ├──────────┼────────────────────────────┼─────────────────┤
+  │  CLS     │  Cumulative Layout Shift   │  Target: <0.1   │
+  │          │  Unexpected layout jumps   │                 │
+  └──────────┴────────────────────────────┴─────────────────┘
+```
+
+### Improving LCP
+
+```
+  LCP Waterfall:
+  
+  HTML request ──→ HTML parse ──→ LCP resource discovered
+                                         │
+              Critical image preloaded ──┘
+              
+  <link rel="preload" as="image" href="/hero.webp" />
+```
+
+```typescript
+// Next.js — priority on hero image
+<Image
+  src="/hero.webp"
+  alt="Hero"
+  priority           // ← adds preload link
+  sizes="100vw"
+  fill
+/>
+```
+
+Key levers:
+- Fast TTFB (server/CDN response time)
+- Preload the hero image
+- Serve WebP/AVIF formats
+- Remove render-blocking resources
+
+### Improving INP
+
+```
+  Long task blocking input:
+  
+  [─────────────── 200ms JS task ───────────────]
+      ↑ user clicks here          ↑ response visible
+                                  (200ms delay = bad INP)
+  
+  Fixed with code splitting + Web Worker:
+  
+  [─── 50ms task ─] [─ Worker ─] [─── 50ms task ─]
+      ↑ click  ↑ response (50ms = good INP)
+```
+
+```typescript
+// Break up long tasks
+async function processLargeDataset(data: Item[]) {
+  const CHUNK_SIZE = 100;
+  const results = [];
+  
+  for (let i = 0; i < data.length; i += CHUNK_SIZE) {
+    const chunk = data.slice(i, i + CHUNK_SIZE);
+    results.push(...processChunk(chunk));
+    
+    // Yield to browser between chunks
+    await new Promise((r) => setTimeout(r, 0));
+  }
+  
+  return results;
+}
+```
+
+### Improving CLS
+
+```
+  Layout shift — image without dimensions:
+  
+  Before load:  [text flows here naturally      ]
+  After load:   [IMAGE LOADS AND PUSHES TEXT DOWN]
+  
+  Fix — reserve space:
+  <img width="800" height="450" src="..." />
+  
+  OR use aspect-ratio:
+  .image-container { aspect-ratio: 16 / 9; }
+```
+
+```typescript
+// Always define width/height on images
+<Image
+  src="/blog-cover.jpg"
+  width={800}
+  height={450}
+  alt="Blog cover"
+/>
+
+// Reserve space for dynamic content
+<div style={{ minHeight: "200px" }}>
+  {content ?? <Skeleton />}
+</div>
+```
+
+### Code Splitting
+
+```
+  Without splitting:          With splitting:
+  
+  bundle.js (2MB)             main.js (200KB)
+  ────────────────            ├── home.js (50KB)  ← loaded on /
+      ↓                       ├── blog.js (80KB)  ← loaded on /blog
+  User downloads              ├── admin.js (400KB)← loaded on /admin
+  everything upfront          └── vendor.js (stable, long-cached)
+```
+
+```typescript
+// Route-level code splitting in Next.js (automatic)
+// Component-level splitting
+const HeavyChart = dynamic(() => import("./HeavyChart"), {
+  loading: () => <ChartSkeleton />,
+  ssr: false,
+});
+```
+
+---
+
+## Networking & API Design
+
+### API Style Comparison
+
+```
+  REST                     GraphQL                 tRPC
+  ─────────────────────    ───────────────────     ──────────────────
+  GET /users               query {                 trpc.users.getById
+  GET /users/:id             user(id: "1") {         .query({ id: 1 })
+  POST /users                  name               
+  PATCH /users/:id             posts {            Full type safety,
+                                 title            no schema file,
+  Simple, cacheable,           }                  TS-to-TS only
+  but over/under-fetch       }                   
+                           Client controls shape
+                           Harder to cache
+```
+
+### Real-Time Communication
+
+```
+  Short polling:    Client ──→ Server every Ns
+                   Simple, inefficient, adds load
+  
+  Long polling:     Client ──→ Server (hold conn) ──→ Client
+                   Push-like, but wastes connections
+  
+  SSE:              Server ──────────────────────→ Client
+                   One-way, efficient for feeds/notifications
+  
+  WebSocket:        Client ←─────────────────────→ Server
+                   Full-duplex, for chat/collab/live trading
+```
+
+```typescript
+// SSE — best for live dashboards, notifications
+function useLiveMetrics() {
+  const [metrics, setMetrics] = useState<Metric[]>([]);
+  
+  useEffect(() => {
+    const es = new EventSource("/api/metrics/stream");
+    
+    es.onmessage = (e) => {
+      setMetrics(JSON.parse(e.data));
+    };
+    
+    return () => es.close();
+  }, []);
+  
+  return metrics;
+}
+```
+
+**Decision guide:**
+- Live feeds, notifications → **SSE**
+- Chat, collaborative editing, live trading → **WebSockets**
+- Simple, low-frequency updates → **Short polling**
+
+---
+
+## Accessibility & Security
+
+### Accessibility Checklist
+
+- [x] Use semantic HTML first (`<button>` not `<div onClick>`)
+- [x] All interactive elements keyboard-reachable
+- [x] Visible focus indicators — never `outline: none` without alternative
+- [x] Sufficient color contrast (4.5:1 for normal text, 3:1 for large)
+- [x] Images have meaningful `alt` text
+- [x] Dynamic updates announced via `aria-live`
+- [x] Modals trap focus and return it on close
+- [ ] Test with VoiceOver / NVDA
+- [ ] Respect `prefers-reduced-motion`
+
+```typescript
+// Focus trap in modal
+function Modal({ isOpen, onClose, children }) {
+  const ref = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (isOpen) ref.current?.focus();
+  }, [isOpen]);
+  
+  return isOpen ? (
+    <div
+      ref={ref}
+      role="dialog"
+      aria-modal="true"
+      tabIndex={-1}
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
+    >
+      {children}
+    </div>
+  ) : null;
+}
+```
+
+### Security Threats & Defenses
+
+```
+  XSS Attack Flow:
+  
+  Attacker injects: <script>steal(document.cookie)</script>
+  Stored in DB → rendered to user → script executes
+  
+  Defense:
+  1. Escape output (React does this by default)
+  2. Never use dangerouslySetInnerHTML with user input
+  3. Content Security Policy header
+```
+
+```typescript
+// ❌ XSS vulnerability
+function Comment({ html }: { html: string }) {
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+// ✅ Safe — use a sanitizer if HTML is truly needed
+import DOMPurify from "dompurify";
+function Comment({ html }: { html: string }) {
+  const clean = DOMPurify.sanitize(html);
+  return <div dangerouslySetInnerHTML={{ __html: clean }} />;
+}
+
+// ✅ Even better — plain text
+function Comment({ text }: { text: string }) {
+  return <p>{text}</p>; // React escapes this automatically
+}
+```
+
+| Threat | Defense |
+|---|---|
+| XSS | Escape output, CSP header, avoid `dangerouslySetInnerHTML` |
+| CSRF | `SameSite` cookies, anti-CSRF tokens |
+| Token theft | `httpOnly` cookies — not `localStorage` |
+| Clickjacking | `X-Frame-Options`, `frame-ancestors` CSP |
+| Supply chain | Lockfiles, `npm audit`, Subresource Integrity |
+
+---
+
+## Observability & Resilience
+
+### Error Boundaries
+
+```
+  Without error boundaries:       With error boundaries:
+  
+  ┌─────────────────────┐         ┌──────────────────────────┐
+  │       App           │         │         App              │
+  │   ┌──────────┐      │         │  ┌──────────────────┐    │
+  │   │ Widget A │ 💥   │         │  │  ErrorBoundary   │    │
+  │   └──────────┘      │         │  │  ┌────────────┐  │    │
+  │   ┌──────────┐      │         │  │  │  Widget A  │💥│    │
+  │   │ Widget B │ 🚫   │         │  │  └────────────┘  │    │
+  │   └──────────┘      │         │  │  [Error UI]      │    │
+  │   ENTIRE APP BLANK  │         │  └──────────────────┘    │
+  └─────────────────────┘         │  ┌────────────────────┐  │
+                                  │  │  Widget B still ✅  │  │
+                                  │  └────────────────────┘  │
+                                  └──────────────────────────┘
+```
+
+```typescript
+class ErrorBoundary extends React.Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    // Report to Sentry, Datadog, etc.
+    reportError(error, info);
+  }
+  
+  render() {
+    return this.state.hasError ? this.props.fallback : this.props.children;
+  }
+}
+
+// Usage: wrap each widget independently
+<ErrorBoundary fallback={<MetricsError />}>
+  <MetricsWidget />
+</ErrorBoundary>
+```
+
+---
+
+## Case Study: Real-Time Analytics Dashboard
+
+Everything above applied to a concrete problem.
+
+```
+  Requirements:
+  ─────────────
+  Functional:    Multiple chart widgets, filterable table (thousands of rows),
+                 date-range filters, real-time metric updates, CSV export
+  
+  Non-functional: Fast initial load, smooth interaction, shareable filter views,
+                  responsive, accessible
+
+  Architecture Decision Map:
+  ──────────────────────────
+  
+  Organization:  Feature-Sliced Design
+                 Each widget = self-contained slice
+                 Shared chart/table primitives in /shared
+  
+  Rendering:     CSR (behind auth, SEO irrelevant)
+                 + SSR app shell for fast first paint
+  
+  State:         filters → URL (shareable, bookmarkable)
+                 API data → TanStack Query (keyed by filter params)
+                 UI state → local useState
+  
+  Real-time:     SSE (one-way server push)
+                 Patches TanStack Query cache on arrival
+  
+  Table:         Virtualization + cursor pagination
+                 Sort/filter pushed to server
+
+  Performance:   Chart libs code-split + prefetched
+                 Heavy aggregation in Web Worker
+                 Stale-while-revalidate on filter change
+  
+  Resilience:    Error boundary per widget
+                 Meaningful loading/empty/error states each
+```
+
+```
+  Data Flow:
+  
+  User changes filter
+        │
+        ▼
+  URL params update (shareable)
+        │
+        ▼
+  TanStack Query sees new key
+        │
+   ┌────┴─────┐
+   │          │
+  Serve      Fetch
+  stale      new data
+  cache      in background
+   │          │
+   └────┬─────┘
+        ▼
+   Update UI (smooth, no flicker)
+```
+
+---
+
+## Interview Cheat Sheet
+
+### Decision Tables
+
+**Which rendering strategy?**
+
+```
+Is it behind auth? → SEO doesn't matter?
+  ├─ Yes → CSR
+  └─ No → Is it personalized per-request?
+       ├─ Yes → SSR
+       └─ No → Does it change often?
+            ├─ Rarely → SSG
+            └─ Sometimes → ISR
+```
+
+**Where does this state live?**
+
+```
+Is it API data?
+  └─ Yes → React Query / SWR
+Is it a filter/page/search?
+  └─ Yes → URL query params
+Is it a form field?
+  └─ Yes → React Hook Form
+Is it shared across many components?
+  └─ Yes → Context or Zustand
+Otherwise → useState (local)
+```
+
+**Which real-time protocol?**
+
+```
+Two-way communication needed?
+  └─ Yes → WebSockets
+Server-to-client only?
+  └─ Yes → SSE
+Simple, infrequent updates?
+  └─ Yes → Polling
+```
+
+### One-Liners to Remember
+
+| Question | Crisp Answer |
+|---|---|
+| CSR vs SSR vs SSG? | Auth-gated → CSR; SEO+dynamic → SSR; static → SSG/ISR |
+| Where does API data go? | Server-cache library — not Redux/Zustand |
+| Where do filters go? | URL — shareable and bookmarkable |
+| Huge table? | Virtualization + cursor pagination + server-side sort |
+| Slow INP? | Code-split, break long tasks, Web Worker |
+| Slow LCP? | Optimize images, preload hero, remove render-blocking |
+| Many teams, one app? | Module Federation — only when org scale demands it |
+
+> **The meta-skill:** There are no universally correct answers — only trade-offs tied to requirements. Stating the requirement, naming the trade-off, and justifying the choice is what separates a senior answer from a junior one.
+
+---
+
+## Summary
+
+Frontend system design is about making deliberate choices with clear reasoning:
+
+- [x] Start with RADIO — requirements before architecture, architecture before libraries
+- [x] Categorize state correctly — server cache ≠ client state
+- [x] Choose rendering strategy per route based on SEO + freshness needs
+- [x] Put filters in the URL, API data in React Query, UI state in useState
+- [x] Virtualize large lists, code-split large features
+- [x] Pick SSE for one-way push, WebSockets for full-duplex
+- [x] Wrap widgets in error boundaries so one failure doesn't blank the page
+- [x] Measure with Lighthouse + RUM before optimizing — field data beats lab data
+
+The best frontend architects aren't the ones who know the most libraries. They're the ones who can look at a requirement, name the trade-off, and justify the choice.
