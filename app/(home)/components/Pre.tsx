@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState, Children, isValidElement } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  Children,
+  isValidElement,
+} from "react";
 import Prism from "prismjs";
 import "prismjs/components/prism-jsx";
 import "prismjs/components/prism-typescript";

@@ -159,8 +159,7 @@ export default async function Page({
         )}
 
         {/* MDX Content */}
-        <div className="mdx-content"
-        >
+        <div className="mdx-content">
           <MDXRemote
             source={content}
             components={components}
