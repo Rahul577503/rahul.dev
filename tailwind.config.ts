@@ -25,6 +25,10 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ["var(--font-newsreader)", "Georgia", "serif"],
+        mono: ["var(--font-ibm-plex-mono)", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

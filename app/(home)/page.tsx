@@ -1,22 +1,6 @@
-import BlogPage, { fetchBlogs, FrontMatter } from "@/home-components/Blog";
-import { Suspense } from "react";
-import {
-  FiCode,
-  FiServer,
-  FiZap,
-  FiShield,
-  FiTrendingUp,
-  FiCheck,
-  FiArrowRight,
-} from "react-icons/fi";
-import {
-  SiReact,
-  SiNodedotjs,
-  SiPostgresql,
-  SiDocker,
-  SiAmazon,
-  SiTypescript,
-} from "react-icons/si";
+import { fetchBlogs } from "@/home-components/Blog";
+import Image from "next/image";
+import Link from "next/link";
 
 export const metadata = {
   title: "Rahul Maurya - Software Engineer",
@@ -48,6 +32,104 @@ export const metadata = {
   },
 };
 
+const work = [
+  {
+    title: "Store My Goods",
+    href: "https://www.storemygoods.in",
+    description:
+      "Software Engineer (SDE-1). Building and maintaining scalable full-stack web applications — from frontend interfaces to backend services and APIs.",
+  },
+  {
+    title: "Full-stack systems",
+    href: "https://github.com/Rahul577503",
+    description:
+      "Designing and shipping production features with React, Next.js, Node.js and PostgreSQL, with a focus on performance and clean architecture.",
+  },
+  {
+    title: "Performance & DX",
+    href: "https://github.com/Rahul577503",
+    description:
+      "Profiling, caching, and optimizing applications, plus code reviews and tooling to keep the developer experience fast.",
+  },
+];
+
+const personal = [
+  {
+    title: "This portfolio",
+    href: "https://github.com/Rahul577503",
+    description: "Built with Next.js, TypeScript and Tailwind CSS.",
+  },
+  {
+    title: "Technical writing",
+    href: "/blog",
+    description:
+      "Notes and articles on software development, web performance and engineering.",
+  },
+];
+
+const socials = [
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/rahul-maurya-6abb491b8",
+  },
+  { label: "GitHub", href: "https://github.com/Rahul577503" },
+  { label: "X", href: "https://twitter.com/RahulMa09588359" },
+  { label: "Email", href: "mailto:rahulmaurya109626@gmail.com" },
+];
+
+function LinkList({
+  items,
+}: {
+  items: { title: string; href: string; description: string }[];
+}) {
+  return (
+    <ul className="space-y-3">
+      {items.map((item) => {
+        const external = item.href.startsWith("http");
+        return (
+          <li
+            key={item.title}
+            className="flex gap-2.5 text-[0.95rem] leading-relaxed"
+          >
+            <span className="mt-[0.7em] h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
+            <p className="text-muted-foreground">
+              <a
+                href={item.href}
+                target={external ? "_blank" : undefined}
+                rel={external ? "noopener noreferrer" : undefined}
+                className="font-medium text-foreground underline decoration-from-font underline-offset-4 hover:opacity-60 transition-opacity"
+              >
+                {item.title}
+              </a>{" "}
+              — {item.description}
+            </p>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function Socials() {
+  return (
+    <nav className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm">
+      {socials.map((social) => (
+        <a
+          key={social.href}
+          href={social.href}
+          target={social.href.startsWith("http") ? "_blank" : undefined}
+          rel={
+            social.href.startsWith("http") ? "noopener noreferrer" : undefined
+          }
+          className="text-muted-foreground underline decoration-from-font underline-offset-4 hover:text-foreground transition-colors"
+        >
+          {social.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
 export default async function HomePage() {
   const blogs = await fetchBlogs().catch((error) => {
     console.error("Error fetching blogs:", error);
@@ -71,229 +153,94 @@ export default async function HomePage() {
     description: "Software Engineer specializing in scalable web systems.",
   };
 
-  const services = [
-    {
-      icon: <FiCode className="w-6 h-6" />,
-      title: "Full Stack Development",
-      description:
-        "End-to-end application development with modern frameworks and best practices",
-      skills: ["React", "Next.js", "Node.js", "TypeScript"],
-    },
-    {
-      icon: <FiServer className="w-6 h-6" />,
-      title: "System Architecture",
-      description:
-        "Scalable backend systems and microservices architecture design",
-      skills: ["PostgreSQL", "Redis", "GraphQL", "REST APIs"],
-    },
-    {
-      icon: <FiZap className="w-6 h-6" />,
-      title: "Performance Optimization",
-      description:
-        "Application profiling, optimization, and performance tuning",
-      skills: ["Caching", "CDN", "Database Optimization", "Code Splitting"],
-    },
-    {
-      icon: <FiShield className="w-6 h-6" />,
-      title: "DevOps & Infrastructure",
-      description:
-        "CI/CD pipelines, containerization, and cloud infrastructure",
-      skills: ["Docker", "AWS", "GitHub Actions", "Nginx"],
-    },
-    {
-      icon: <FiTrendingUp className="w-6 h-6" />,
-      title: "Technical Leadership",
-      description: "Code reviews, mentoring, and architectural decision-making",
-      skills: ["Agile", "Code Review", "Documentation", "Best Practices"],
-    },
-    {
-      icon: <FiCode className="w-6 h-6" />,
-      title: "Legacy Modernization",
-      description:
-        "Refactoring and upgrading legacy systems to modern tech stacks",
-      skills: ["Migration", "Refactoring", "Testing", "Documentation"],
-    },
-  ];
-
-  const techStack = [
-    { icon: <SiReact />, name: "React" },
-    { icon: <SiNodedotjs />, name: "Node.js" },
-    { icon: <SiTypescript />, name: "TypeScript" },
-    { icon: <SiPostgresql />, name: "PostgreSQL" },
-    { icon: <SiDocker />, name: "Docker" },
-    { icon: <SiAmazon />, name: "AWS" },
-  ];
-
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-zinc-600 dark:text-zinc-200 selection:bg-amber-500/30 overflow-hidden relative transition-colors duration-300">
+    <div className="bg-background text-foreground selection:bg-foreground/10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Enhanced Background Effects */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/[0.03] dark:bg-amber-500/[0.03] rounded-full blur-[140px] pointer-events-none -translate-y-1/3 translate-x-1/3" />
-      <div className="absolute top-40 left-0 w-[400px] h-[400px] bg-indigo-500/[0.02] dark:bg-indigo-500/[0.02] rounded-full blur-[120px] pointer-events-none -translate-x-1/3" />
-
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-16 sm:pb-20 relative z-10">
-        {/* Hero Section */}
-        <section className="mb-16 sm:mb-24">
-          <div className="space-y-4 sm:space-y-6">
-            <div className="space-y-2 sm:space-y-3">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-zinc-900 dark:text-white leading-tight">
+      <main className="max-w-2xl mx-auto px-5 sm:px-6 pb-20 pt-2 space-y-12">
+        {/* Header / intro */}
+        <header className="space-y-5">
+          <div className="flex items-center gap-4">
+            <Image
+              src="/img/rahul_maurya.jpg"
+              alt="Rahul Maurya"
+              width={64}
+              height={64}
+              className="h-16 w-16 shrink-0 rounded-2xl object-cover"
+              priority
+            />
+            <div className="space-y-0.5">
+              <h1 className="text-2xl font-semibold tracking-tight">
                 Rahul Maurya
               </h1>
-              <p className="text-lg sm:text-xl md:text-2xl text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
-                Software Engineer (SDE-1) at{" "}
-                <span className="text-amber-600 dark:text-amber-400">
-                  Store My Goods
-                </span>
+              <p className="text-[0.95rem] text-muted-foreground">
+                Software Engineer (SDE-1) at Store My Goods
               </p>
             </div>
+          </div>
+          <p className="text-[0.95rem] leading-relaxed text-muted-foreground">
+            I build scalable, performant full-stack web applications — from
+            polished frontends to reliable backend services. I care about clean
+            code, performance, and shipping things that last. Currently open to
+            new opportunities and freelance work.
+          </p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3 pt-1">
+            <a
+              href="mailto:rahulmaurya109626@gmail.com"
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              Let&apos;s talk
+            </a>
+            <Socials />
+          </div>
+        </header>
 
-            <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-3xl">
-              Specialized in building scalable web applications, optimizing
-              performance, and implementing modern architecture patterns.
-              Passionate about writing clean, maintainable code and solving
-              complex engineering challenges.
-            </p>
+        <section className="space-y-4">
+          <h2 className="text-base font-semibold tracking-tight">Work</h2>
+          <LinkList items={work} />
+        </section>
 
-            {/* Tech Stack Pills */}
-            <div className="flex flex-wrap gap-2 pt-2">
-              {techStack.map((tech) => (
-                <div
-                  key={tech.name}
-                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/50 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm"
-                >
-                  <span className="text-sm sm:text-base">{tech.icon}</span>
-                  <span className="font-medium">{tech.name}</span>
-                </div>
+        <section className="space-y-4">
+          <h2 className="text-base font-semibold tracking-tight">Personal</h2>
+          <LinkList items={personal} />
+        </section>
+
+        {blogs.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-base font-semibold tracking-tight">Writing</h2>
+            <ul className="divide-y divide-border">
+              {blogs.slice(0, 5).map((blog) => (
+                <li key={blog.slug}>
+                  <Link
+                    href={`/blogs/${blog.slug}`}
+                    className="group flex items-baseline justify-between gap-4 py-2.5"
+                  >
+                    <span className="text-[0.95rem] text-foreground group-hover:opacity-60 transition-opacity">
+                      {blog.meta.title}
+                    </span>
+                    <time className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(blog.meta.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </time>
+                  </Link>
+                </li>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Services Section */}
-        <section className="mb-16 sm:mb-24">
-          <div className="mb-8 sm:mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white mb-2 sm:mb-3">
-              What I Can Help With
-            </h2>
-            <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400">
-              Services and expertise I can bring to your project
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="group p-4 sm:p-5 rounded-xl border border-zinc-200 dark:border-zinc-800/50 bg-white dark:bg-zinc-900/20 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 hover:border-amber-200 dark:hover:border-amber-900/50 transition-all duration-300"
+            </ul>
+            {blogs.length > 5 && (
+              <Link
+                href="/blog"
+                className="inline-block text-sm text-muted-foreground underline decoration-from-font underline-offset-4 hover:text-foreground transition-colors"
               >
-                <div className="flex items-start gap-2.5 sm:gap-3 mb-2.5 sm:mb-3">
-                  <div className="p-2 sm:p-2.5 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
-                    {service.icon}
-                  </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-white pt-0.5 sm:pt-1">
-                    {service.title}
-                  </h3>
-                </div>
-                <p className="text-zinc-600 dark:text-zinc-400 mb-2.5 sm:mb-3 leading-relaxed text-sm">
-                  {service.description}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {service.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="text-xs px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Hire Me CTA Section */}
-        <section className="mb-16 sm:mb-24">
-          <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-500/5 dark:to-orange-500/5 p-6 sm:p-10">
-            <div className="relative z-10">
-              <div className="max-w-2xl">
-                <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white mb-2 sm:mb-3">
-                  Let&apos;s Work Together
-                </h2>
-                <p className="text-sm sm:text-base text-zinc-700 dark:text-zinc-300 mb-4 sm:mb-6 leading-relaxed">
-                  I&apos;m available for freelance projects, consulting, and
-                  full-time opportunities. Let&apos;s discuss how I can help
-                  bring your ideas to life with quality code and modern
-                  solutions.
-                </p>
-
-                <div className="space-y-2 sm:space-y-2.5 mb-5 sm:mb-6">
-                  <div className="flex items-center gap-2 sm:gap-2.5 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm">
-                    <FiCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                    <span>
-                      Full-stack development with React, Next.js, and Node.js
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-2.5 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm">
-                    <FiCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                    <span>System architecture and database design</span>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-2.5 text-zinc-700 dark:text-zinc-300 text-xs sm:text-sm">
-                    <FiCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-                    <span>Performance optimization and code reviews</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 sm:gap-3">
-                  <a
-                    href="mailto:rahulmaurya109626@gmail.com"
-                    className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 text-white font-medium transition-all shadow-lg shadow-amber-600/20 dark:shadow-amber-500/20 hover:shadow-xl text-sm"
-                  >
-                    Get In Touch
-                    <FiArrowRight className="w-4 h-4" />
-                  </a>
-                  <a
-                    href="https://www.linkedin.com/in/rahul-maurya-6abb491b8"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/50 hover:border-amber-300 dark:hover:border-amber-700/50 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium transition-all text-sm"
-                  >
-                    LinkedIn Profile
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Decorative gradient */}
-            <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 bg-gradient-to-br from-amber-400/20 to-orange-400/20 dark:from-amber-400/10 dark:to-orange-400/10 rounded-full blur-3xl" />
-          </div>
-        </section>
-
-        {/* Blog Section */}
-        <section>
-          <div className="mb-5 sm:mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white mb-1.5 sm:mb-2">
-              Latest Articles
-            </h2>
-            <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400">
-              Thoughts on software development and engineering
-            </p>
-          </div>
-
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center py-12 sm:py-16">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 border-3 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
-              </div>
-            }
-          >
-            <BlogPage blogs={blogs} limit={6} />
-          </Suspense>
-        </section>
+                All {blogs.length} articles →
+              </Link>
+            )}
+          </section>
+        )}
       </main>
     </div>
   );

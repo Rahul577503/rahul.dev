@@ -8,11 +8,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="relative min-h-screen bg-black text-white">
+    <div className="relative min-h-screen bg-background text-foreground">
       <Navbar />
-      <main className="pb-16 min-h-screen w-full overflow-hidden">
-        {children}
-      </main>
+      <main className="min-h-screen w-full">{children}</main>
       <Footer />
     </div>
   );

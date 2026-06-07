@@ -2,37 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'prismjs/themes/prism-okaidia.css';
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 40 33% 98%;
+    --foreground: 30 8% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card: 40 33% 98%;
+    --card-foreground: 30 8% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 40 33% 98%;
+    --popover-foreground: 30 8% 12%;
 
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 30 8% 12%;
+    --primary-foreground: 40 33% 98%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 40 20% 94%;
+    --secondary-foreground: 30 8% 12%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 30 5% 42%;
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 40 20% 94%;
+    --accent-foreground: 30 8% 12%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --border: 35 15% 88%;
+    --input: 35 15% 88%;
+    --ring: 30 8% 12%;
 
     --radius: 0.5rem;
   }
@@ -170,12 +168,84 @@ body {
   font-family: var(--font-ibm-plex-mono);
 }
 
-/* Fix Prism.js hydration errors - remove tabindex to prevent mismatch */
-pre[class*="language-"] {
+/* ── Code blocks ─────────────────────────────────────────── */
+pre[class*="language-"],
+code[class*="language-"] {
+  color: #e4e4e7;
+  background: none;
+  text-shadow: none;
+  font-family: var(--font-ibm-plex-mono), ui-monospace, monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  tab-size: 2;
+  hyphens: none;
+  white-space: pre;
   -webkit-user-select: text;
   user-select: text;
 }
 
 pre[class*="language-"]:focus {
   outline: none;
+}
+
+/* Syntax tokens — soft pastel palette on neutral dark */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #71717a;
+  font-style: italic;
+}
+.token.punctuation {
+  color: #a1a1aa;
+}
+.token.namespace {
+  opacity: 0.7;
+}
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #fcd34d;
+}
+.token.boolean,
+.token.number {
+  color: #fdba74;
+}
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #86efac;
+}
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #a1a1aa;
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #f472b6;
+}
+.token.function,
+.token.class-name {
+  color: #93c5fd;
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: #fdba74;
+}
+.token.important,
+.token.bold {
+  font-weight: 600;
+}
+.token.italic {
+  font-style: italic;
 }

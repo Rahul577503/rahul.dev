@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono } from "next/font/google";
+import { Newsreader, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import Layout from "@/home-components/Layout.tsx/Layout";
+
+const newsreader = Newsreader({
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
+  preload: true,
+  variable: "--font-newsreader",
+});
 
 const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin", "latin-ext"],
@@ -99,12 +108,13 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body
-        className={`${ibmPlexMono.className} bg-background text-foreground antialiased min-h-screen`}
+        className={`${newsreader.variable} ${ibmPlexMono.variable} font-serif bg-background text-foreground antialiased min-h-screen`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="light"
+          forcedTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <Layout>{children}</Layout>
@@ -118,5 +128,5 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#000000",
+  themeColor: "#faf9f5",
 };
