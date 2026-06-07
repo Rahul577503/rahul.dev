@@ -57,7 +57,7 @@ const Code: React.FC<CodeProps> = ({ language = "code", code, children }) => {
   };
 
   return (
-    <div className="code-card not-prose group my-6 overflow-hidden rounded-xl border border-zinc-800 bg-[#18181b] shadow-sm">
+    <div className="code-card not-prose group overflow-hidden rounded-xl border border-zinc-800 bg-[#18181b] shadow-sm">
       <div className="flex items-center justify-between border-b border-zinc-800 bg-[#1c1c20] px-4 py-2">
         <span className="font-mono text-xs lowercase tracking-wide text-zinc-500">
           {language}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, Children, isValidElement } from "react";
+import React, { useEffect, useRef, useState, Children, isValidElement } from "react";
 import Prism from "prismjs";
 import "prismjs/components/prism-jsx";
 import "prismjs/components/prism-typescript";
@@ -24,8 +24,7 @@ function extractCode(node: any): string {
   return "";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function Pre({ children, ...props }: any) {
+export default function Pre({ children }: { children?: React.ReactNode }) {
   const preRef = useRef<HTMLPreElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -53,7 +52,7 @@ export default function Pre({ children, ...props }: any) {
   };
 
   return (
-    <div className="code-card not-prose group my-6 overflow-hidden rounded-xl border border-zinc-800 bg-[#18181b] shadow-sm">
+    <div className="code-card not-prose group overflow-hidden rounded-xl border border-zinc-800 bg-[#18181b] shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800 bg-[#1c1c20] px-4 py-2">
         <span className="font-mono text-xs lowercase tracking-wide text-zinc-500">
@@ -81,8 +80,8 @@ export default function Pre({ children, ...props }: any) {
       {/* Code */}
       <pre
         ref={preRef}
-        {...props}
-        className="overflow-x-auto !bg-transparent p-4 !text-sm leading-relaxed"
+        className="overflow-x-auto bg-transparent p-4 text-sm leading-relaxed"
+        suppressHydrationWarning
       >
         {children}
       </pre>

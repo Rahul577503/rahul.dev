@@ -3,6 +3,7 @@ import path from "path";
 import matter from "gray-matter";
 import Image from "next/image";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import { notFound } from "next/navigation";
 import Title from "@/home-components/Title";
 import GoBack from "@/home-components/GoBack";
@@ -116,9 +117,9 @@ export default async function Page({
 
   return (
     <div className="min-h-screen bg-background">
-      <article className="max-w-3xl mx-auto px-6 sm:px-8 pt-4 pb-20">
+      <article className="max-w-2xl mx-auto px-5 sm:px-6 pt-2 pb-16">
         {/* Header */}
-        <header className="mb-8 space-y-3">
+        <header className="mb-6 space-y-2">
           <div className="flex items-start justify-between gap-3 sm:gap-4">
             <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight leading-tight flex-1">
               {frontMatter.title}
@@ -145,7 +146,7 @@ export default async function Page({
 
         {/* Featured Image */}
         {frontMatter.image && (
-          <div className="relative w-full aspect-video mb-10 rounded-xl overflow-hidden border border-border">
+          <div className="relative w-full aspect-video mb-6 rounded-xl overflow-hidden border border-border">
             <Image
               src={frontMatter.image}
               alt={frontMatter.title}
@@ -158,24 +159,13 @@ export default async function Page({
         )}
 
         {/* MDX Content */}
-        <div
-          className="prose prose-zinc max-w-none
-          prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-foreground prose-headings:scroll-mt-24
-          prose-h1:text-2xl sm:prose-h1:text-3xl prose-h1:mb-4
-          prose-h2:text-xl sm:prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
-          prose-h3:text-lg sm:prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
-          prose-p:text-muted-foreground prose-p:leading-relaxed
-          prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 prose-a:font-medium prose-a:break-words
-          prose-strong:text-foreground prose-strong:font-semibold
-          prose-code:text-foreground prose-code:bg-secondary prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[0.85em] prose-code:font-normal prose-code:before:content-none prose-code:after:content-none prose-code:break-words
-          prose-ul:text-muted-foreground prose-ol:text-muted-foreground
-          prose-li:text-muted-foreground prose-li:my-1
-          prose-blockquote:border-l-foreground/30 prose-blockquote:text-muted-foreground prose-blockquote:italic prose-blockquote:font-normal
-          prose-img:rounded-xl prose-img:border prose-img:border-border
-          prose-hr:border-border
-        "
+        <div className="mdx-content"
         >
-          <MDXRemote source={content} components={components} />
+          <MDXRemote
+            source={content}
+            components={components}
+            options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+          />
         </div>
 
         <Share title={frontMatter.title} slug={slug} />
