@@ -1,0 +1,71 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+<rect x="0" y="0" width="1280" height="720" fill="#ffffff"/>
+<rect x="32" y="32" width="1216" height="656" rx="16" fill="#fcfcfb" stroke="#e3e1d8" stroke-width="1"/>
+
+<!-- LEFT COLUMN: title block -->
+<text x="72" y="104" font-size="16" font-weight="500" letter-spacing="3" fill="#888780">REACT · WEB PERFORMANCE</text>
+<line x1="72" y1="126" x2="572" y2="126" stroke="#d3d1c7" stroke-width="1" stroke-dasharray="2 4"/>
+
+<text x="68" y="214" font-size="70" font-weight="500" fill="#2c2c2a">Web</text>
+<text x="68" y="292" font-size="70" font-weight="500" fill="#2c2c2a">Performance</text>
+<text x="68" y="370" font-size="70" font-weight="500" fill="#2c2c2a">Fundamentals</text>
+<text x="72" y="424" font-size="30" fill="#5f5e5a">for React developers</text>
+
+<!-- Core Web Vitals targets -->
+<text x="72" y="494" font-size="14" font-weight="500" letter-spacing="2" fill="#888780">CORE WEB VITALS TARGETS</text>
+
+<rect x="72" y="512" width="156" height="124" rx="12" fill="#ffffff" stroke="#d3d1c7" stroke-width="1"/>
+<text x="90" y="550" font-size="16" font-weight="500" letter-spacing="2" fill="#888780">FCP</text>
+<text x="90" y="596" font-size="32" font-weight="500" fill="#2c2c2a">≤ 1.8s</text>
+<text x="90" y="620" font-size="14" fill="#5f5e5a">first paint</text>
+
+<rect x="244" y="512" width="156" height="124" rx="12" fill="#ffffff" stroke="#d3d1c7" stroke-width="1"/>
+<text x="262" y="550" font-size="16" font-weight="500" letter-spacing="2" fill="#888780">LCP</text>
+<text x="262" y="596" font-size="32" font-weight="500" fill="#2c2c2a">≤ 2.5s</text>
+<text x="262" y="620" font-size="14" fill="#5f5e5a">largest paint</text>
+
+<rect x="416" y="512" width="156" height="124" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="434" y="550" font-size="16" font-weight="500" letter-spacing="2" fill="#0F6E56">INP</text>
+<text x="434" y="596" font-size="32" font-weight="500" fill="#085041">≤ 200ms</text>
+<text x="434" y="620" font-size="14" fill="#0F6E56">responsiveness</text>
+
+<!-- vertical separator -->
+<line x1="616" y1="84" x2="616" y2="636" stroke="#e3e1d8" stroke-width="1"/>
+
+<!-- RIGHT COLUMN: six topic cards in 2x3 grid -->
+<rect x="656" y="84" width="264" height="164" rx="12" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+<text x="680" y="138" font-size="24" font-weight="500" fill="#3C3489">Measure</text>
+<text x="896" y="138" font-size="15" font-weight="500" fill="#534AB7" text-anchor="end" opacity="0.6">01</text>
+<text x="680" y="180" font-size="17" fill="#534AB7">RUM · CrUX</text>
+<text x="680" y="210" font-size="17" fill="#534AB7">throttle CPU &amp; network</text>
+
+<rect x="944" y="84" width="264" height="164" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
+<text x="968" y="138" font-size="24" font-weight="500" fill="#085041">Deliver</text>
+<text x="1184" y="138" font-size="15" font-weight="500" fill="#0F6E56" text-anchor="end" opacity="0.6">02</text>
+<text x="968" y="180" font-size="17" fill="#0F6E56">CDN · Cache-Control</text>
+<text x="968" y="210" font-size="17" fill="#0F6E56">gzip &amp; Brotli</text>
+
+<rect x="656" y="278" width="264" height="164" rx="12" fill="#FAECE7" stroke="#993C1D" stroke-width="1"/>
+<text x="680" y="332" font-size="24" font-weight="500" fill="#712B13">Render</text>
+<text x="896" y="332" font-size="15" font-weight="500" fill="#993C1D" text-anchor="end" opacity="0.6">03</text>
+<text x="680" y="374" font-size="17" fill="#993C1D">CSR · SSR · SSG</text>
+<text x="680" y="404" font-size="17" fill="#993C1D">RSC &amp; hydration</text>
+
+<rect x="944" y="278" width="264" height="164" rx="12" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+<text x="968" y="332" font-size="24" font-weight="500" fill="#0C447C">Split</text>
+<text x="1184" y="332" font-size="15" font-weight="500" fill="#185FA5" text-anchor="end" opacity="0.6">04</text>
+<text x="968" y="374" font-size="17" fill="#185FA5">vendor chunk</text>
+<text x="968" y="404" font-size="17" fill="#185FA5">React.lazy · preload</text>
+
+<rect x="656" y="472" width="264" height="164" rx="12" fill="#FAEEDA" stroke="#854F0B" stroke-width="1"/>
+<text x="680" y="526" font-size="24" font-weight="500" fill="#633806">Fetch</text>
+<text x="896" y="526" font-size="15" font-weight="500" fill="#854F0B" text-anchor="end" opacity="0.6">05</text>
+<text x="680" y="568" font-size="17" fill="#854F0B">no fetch waterfalls</text>
+<text x="680" y="598" font-size="17" fill="#854F0B">stream slow data</text>
+
+<rect x="944" y="472" width="264" height="164" rx="12" fill="#EAF3DE" stroke="#3B6D11" stroke-width="1"/>
+<text x="968" y="526" font-size="24" font-weight="500" fill="#27500A">Interact</text>
+<text x="1184" y="526" font-size="15" font-weight="500" fill="#3B6D11" text-anchor="end" opacity="0.6">06</text>
+<text x="968" y="568" font-size="17" fill="#3B6D11">yield long tasks</text>
+<text x="968" y="598" font-size="17" fill="#3B6D11">move state down</text>
+</svg>

@@ -1,0 +1,676 @@
+---
+title: "Web Performance Fundamentals: Rendering Patterns and Real Fixes for React Apps"
+date: "2026-09-12"
+description: "How the browser actually gets pixels on screen, when CSR, SSR, SSG or streaming with Server Components is the right call, and the practical fixes that move LCP and INP in real React apps."
+image: "/img/web-performance-fundamentals.svg"
+tags: ["Performance", "React", "Rendering", "Core Web Vitals", "Architecture"]
+---
+
+Every few months someone on a team asks "should we move to SSR?", and it almost always comes right after the app felt slow on somebody's phone. The honest answer is usually: we don't know yet, because nobody has measured where the time is going.
+
+That's what this post is about. I want to walk through how a page actually gets rendered, what each rendering strategy really buys you (and what it costs), and then the fixes I reach for once the data tells me where the problem is. A lot of it comes from reading _Web Performance Fundamentals: The React Developer's Guide_, mixed with my own notes on rendering architecture.
+
+It's a long one. Grab a coffee.
+
+> My one rule: **measure, fix the biggest thing, measure again.** Nothing below is worth doing until a trace points at it.
+
+## What the Browser Does When a Page Loads
+
+Before comparing CSR and SSR, it helps to be clear about what the browser is doing. Every rendering strategy is just a different way of feeding this pipeline.
+
+1. The browser requests the HTML document. The time until the first byte comes back is **TTFB**.
+2. It starts parsing the HTML and building the DOM.
+3. It runs into external resources. Stylesheets are **render-blocking**, so nothing paints until the CSS arrives. Plain `script` tags without `defer` or `async` are **parser-blocking**, so parsing stops until the script downloads and runs.
+4. Once it has the DOM and the CSS, it calculates layout and paints.
+
+The minimum set of resources the browser needs to get the main content on screen is the **critical path**. Most performance work comes down to making that path shorter.
+
+```html
+<head>
+  <!-- Render-blocking: nothing paints until this CSS arrives -->
+  <link rel="stylesheet" href="/assets/app.css" />
+
+  <!-- Parser-blocking: HTML parsing stops until this downloads and runs -->
+  <script src="/assets/legacy-widget.js"></script>
+
+  <!-- Downloads in parallel, runs after parsing finishes -->
+  <script defer src="/assets/app.js"></script>
+
+  <!-- Module scripts are deferred by default -->
+  <script type="module" src="/assets/index.js"></script>
+</head>
+```
+
+One thing people often get wrong: the `type="module"` script in a Vite SPA doesn't block parsing. It doesn't have to. With an empty root div there's nothing to paint until that script runs anyway, and that's the real cost of CSR. More on that below.
+
+### The Metrics That Matter
+
+| Metric | What it tells you | What usually drives it | Good |
+|--------|-------------------|------------------------|------|
+| **TTFB** | How long until the first byte of HTML arrives | Server work, distance to the server, redirects | ≤ 0.8s |
+| **FCP** | When the first piece of DOM content is painted | TTFB, render-blocking CSS and JS, whether the HTML has any markup | ≤ 1.8s |
+| **LCP** | When the biggest element in the viewport is painted | Bundle size, server rendering, API latency, image priority | ≤ 2.5s |
+| **CLS** | How much the layout jumps around | Images without dimensions, late content, hydration flicker | ≤ 0.1 |
+| **INP** | How fast the page responds to clicks, taps, and keys | Long tasks, expensive layout, cascading re-renders | ≤ 200ms |
+
+You'll still see **TTI** (Time to Interactive) in older articles. Lighthouse dropped it in version 10 because it was too sensitive to outliers, but the idea behind it is still useful: there's a window where the page _looks_ ready while the main thread is too busy to respond. Keep that in mind for the SSR section.
+
+## Measure First
+
+### Field data tells you what's slow
+
+Your laptop on office Wi-Fi isn't your users. **Real User Monitoring (RUM)** collects metrics from real sessions, so you can see which pages, countries, and devices are actually struggling. For public sites, Google's **Chrome UX Report (CrUX)** gives you similar field data for free.
+
+The simplest RUM setup is the `web-vitals` library:
+
+```ts
+import { onFCP, onLCP, onCLS, onINP, type Metric } from "web-vitals";
+
+function sendToAnalytics(metric: Metric) {
+  // sendBeacon still delivers when the user closes the tab
+  navigator.sendBeacon("/analytics", JSON.stringify(metric));
+}
+
+onFCP(sendToAnalytics);
+onLCP(sendToAnalytics);
+onCLS(sendToAnalytics);
+onINP(sendToAnalytics);
+```
+
+### Lab profiling tells you why
+
+When you reproduce a problem in Chrome DevTools, set the environment up properly or you'll end up chasing ghosts:
+
+- **Use a clean profile.** A Chrome Guest window is enough. Extensions inject scripts into every page and can inflate things like HTML parsing in the flame graph. Your users don't have your extensions.
+- **Throttle the network** to Slow 4G or 3G.
+- **Throttle the CPU** by 6x to 20x. A mid-range Android phone is far slower than a MacBook, and problems you can't feel locally suddenly become obvious.
+
+## Rendering Strategies
+
+This is the part everyone argues about. Here's how the four main options compare:
+
+| | CSR | SSR | SSG | Streaming + RSC |
+|---|-----|-----|-----|-----------------|
+| **First HTML response** | Empty root div and script tags | Full markup, rendered per request | Full markup, rendered at build time | Page shell first, the rest streamed in |
+| **FCP / LCP** | Waits for JS to download and run | Fast, unless the server is slow | Fastest, served straight from a CDN | Fast shell; slow data doesn't block it |
+| **Interactive** | As soon as it renders | After hydration | After hydration | Progressively; Server Components ship no JS |
+| **Hosting** | Static files on a CDN | Node or edge server on every request | Static files on a CDN | Server runtime that supports streaming |
+| **SEO and link previews** | Bots have to run JS; previews often break | Complete HTML immediately | Complete HTML immediately | Indexable; HTML arrives as a stream |
+
+None of these columns is "the best". Each one gives something up. Let's go through them.
+
+### Client-Side Rendering (CSR)
+
+In a classic SPA, the server sends almost nothing:
+
+```html
+<html lang="en">
+  <head>
+    <script type="module" crossorigin src="/assets/index.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+Here's what a cold load looks like:
+
+1. The browser downloads that tiny HTML file. That part is fast.
+2. It downloads the CSS and the JavaScript bundle.
+3. The main thread parses, compiles, and runs the bundle. React builds the tree and puts real DOM nodes into `#root` with `createRoot(...).render(...)`.
+4. The UI finally paints. If a component needs data, it now fires a request from `useEffect`, and the user looks at a skeleton until it comes back.
+
+FCP and LCP can't happen before step 3 is done. On a slow phone with a big bundle, that's a long blank screen.
+
+**Where CSR is great:** hosting is just static files on a CDN, so there's no server to run or pay for. Once assets are cached, moving between pages is instant. And `window`, `document`, and `localStorage` are available everywhere without a second thought.
+
+**Where it hurts:** the first load is slow, and everything depends on JavaScript. Google does render JavaScript, but that rendering is queued and budgeted. Most other crawlers, and pretty much every link preview bot (Slack, WhatsApp, X, LinkedIn), don't run JS at all. They see an empty page.
+
+For an app behind a login screen, none of those downsides matter much. That's why CSR is still a perfectly reasonable choice for dashboards.
+
+### Server-Side Rendering (SSR) and Hydration
+
+With SSR your components run on the server for every request. The classic React version calls `renderToString`, drops the result into the root div, and sends back a full HTML document:
+
+```tsx
+import { renderToString } from "react-dom/server";
+
+app.get("*", (req, res) => {
+  const html = renderToString(<App url={req.url} />);
+  res.send(`<!DOCTYPE html>
+    <html>
+      <body>
+        <div id="root">${html}</div>
+        <script type="module" src="/assets/index.js"></script>
+      </body>
+    </html>`);
+});
+```
+
+The browser can paint that markup as soon as it has the HTML and CSS, before any JavaScript runs. That's the big win.
+
+#### The hydration contract
+
+The HTML you get from SSR looks real, but it's dead. No click handlers, no state, no form behavior. To bring it to life the client has to **hydrate** it, and you do that with `hydrateRoot`, not `createRoot`:
+
+```tsx
+import { createRoot, hydrateRoot } from "react-dom/client";
+import App from "./App";
+
+// ❌ Throws away the server HTML and rebuilds the whole DOM
+createRoot(document.getElementById("root")!).render(<App />);
+
+// ✅ Keeps the existing DOM and attaches event listeners to it
+hydrateRoot(document.getElementById("root")!, <App />);
+```
+
+While hydrating, React walks the existing DOM, matches it against what your components render on the client, and attaches listeners instead of recreating nodes. You can see the difference in a flame graph: the extra Layout work inside React's first big JavaScript task disappears.
+
+The contract is strict, though. **The first client render has to produce exactly the same markup as the server did.** Break that, and React throws away the server HTML for that part of the tree and renders it again on the client. That's slower than if you'd never used SSR at all.
+
+#### Pitfalls that break hydration
+
+**Touching browser APIs during render.** The server has no `window`, `document`, or `navigator`. Use them at module level or during render and the server crashes with `ReferenceError: window is not defined`.
+
+**Branching on the environment.** This looks like a fix, but it's a trap:
+
+```tsx
+// ❌ Server renders null, client renders the widget → hydration mismatch
+function Widget() {
+  if (typeof window === "undefined") return null;
+  return <InteractiveControl />;
+}
+```
+
+Server and client disagree on the very first render, which is the one thing hydration can't handle. The safe pattern is to render the same thing on both sides first and switch after mount:
+
+```tsx
+// ✅ Server and first client render match; the widget appears after hydration
+function ClientOnlyWidget() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Reserve the space so the page doesn't jump when the widget shows up
+  if (!isMounted) return <div className="h-10" />;
+  return <InteractiveControl />;
+}
+```
+
+Notice the placeholder instead of `null`. Returning nothing works too, but then the widget pops in and pushes content down, and you've swapped a hydration bug for a CLS problem.
+
+**Forgetting to send the data.** If the server fetched data to render the page, the client needs that same data for its first render. Otherwise it renders loading skeletons on top of real content and fetches everything again. Serialize the data into the page:
+
+```tsx
+res.send(`
+  <div id="root">${html}</div>
+  <script>window.__SSR_DATA__ = ${serialize(data)}</script>
+  <script type="module" src="/assets/index.js"></script>
+`);
+```
+
+```tsx
+hydrateRoot(root, <App initialData={window.__SSR_DATA__} />);
+```
+
+Use a proper serializer like `serialize-javascript` here, not a raw `JSON.stringify`. If some user's name contains `</script>`, plain JSON will happily break out of the script tag.
+
+#### When SSR makes LCP worse
+
+SSR isn't a free upgrade. There are real situations where it does worse than CSR. The classic one is a decent phone on a bad mobile connection, with the JS bundle already cached from an earlier visit:
+
+- **The HTML gets heavy.** A fully rendered page with big tables, nav trees, and inlined data can weigh many kilobytes, against a few hundred bytes for a CSR shell. On a slow connection that HTML takes a while to arrive, and the cached bundle that CSR would have used instantly doesn't help.
+- **The uncanny valley.** The page looks ready but isn't interactive until the JS downloads and hydration finishes. Users tap the menu button and nothing happens. That feels worse than a spinner.
+- **Every document request now goes through a server.** If that server lives in one region and your user is on the other side of the world, TTFB can eat everything SSR gained.
+
+So when someone says SSR will fix performance, ask to see the trace.
+
+### Static Site Generation (SSG)
+
+SSG does the same rendering as SSR, just once at build time instead of on every request. Next.js, Astro, and Gatsby run your components during the build and write out real HTML files like `index.html` and `about.html`.
+
+That gets you some really nice properties:
+
+- **Edge delivery.** The HTML sits on CDN nodes close to your users with no server compute in the way. TTFB is about as low as it gets.
+- **Simple caching.** A static file is a static file. No invalidation logic in your backend, no per-user variations to think about.
+- **Cheap, boring scaling.** A traffic spike is the CDN's problem, not yours.
+
+It's a great fit for docs, marketing pages, blogs, and catalog pages where content changes when you deploy. This blog is statically generated, for example.
+
+The limits show up as you grow. Builds slow down as the page count goes up, and content is only as fresh as your last deploy. Incremental Static Regeneration (ISR) and on-demand revalidation in Next.js sit in the middle: pages stay static but get rebuilt in the background once they're stale.
+
+### React Server Components (RSC) and Streaming
+
+RSC changes the question from "where do we pre-render this app?" to "which parts of this app need to run in the browser at all?"
+
+**Server Components** are the default in frameworks like the Next.js App Router. They run only on the server, can talk straight to your database or internal services, and their code never lands in the client bundle.
+
+**Client Components** are marked with `"use client"`. They get bundled and shipped to the browser because they need state, effects, event handlers, or browser APIs.
+
+```tsx
+// Server Component: runs only on the server, adds nothing to the bundle
+async function ProductDetails({ id }: { id: string }) {
+  const product = await db.product.findUnique({ where: { id } });
+
+  return (
+    <section>
+      <h1>{product.name}</h1>
+      <p>{product.description}</p>
+      <AddToCartButton productId={id} />
+    </section>
+  );
+}
+```
+
+```tsx
+"use client";
+
+// Client Component: ships to the browser because it needs state and a click handler
+export function AddToCartButton({ productId }: { productId: string }) {
+  const [adding, setAdding] = useState(false);
+
+  async function handleClick() {
+    setAdding(true);
+    await addToCart(productId);
+    setAdding(false);
+  }
+
+  return (
+    <button onClick={handleClick} disabled={adding}>
+      {adding ? "Adding…" : "Add to cart"}
+    </button>
+  );
+}
+```
+
+#### Streaming fixes the all-or-nothing problem
+
+`renderToString` is all or nothing. If one query on the server takes 700ms, the whole HTML response waits 700ms. Streaming with `renderToPipeableStream` (what frameworks use under the hood) sends HTML in chunks over a single open connection, and Suspense boundaries decide where the chunks split:
+
+```tsx
+export default async function DashboardView() {
+  return (
+    <div>
+      <h1>Analytics Console</h1>
+
+      <Suspense fallback={<SidebarSkeleton />}>
+        <AsyncSidebar />
+      </Suspense>
+
+      <Suspense fallback={<TableSkeleton />}>
+        <AsyncDataTable />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+Here's what actually happens:
+
+1. The server renders the shell (the heading, the layout, and both fallbacks) and flushes it right away. The browser paints it, so FCP and LCP happen early.
+2. `AsyncSidebar` and `AsyncDataTable` fetch their data in parallel on the server. As each one resolves, the server renders it and pushes that HTML down the same response.
+3. The browser receives the chunk and swaps it into its Suspense boundary. No reload, and the shell never waited for it.
+
+#### Things nobody tells you about streaming
+
+- **Streaming and RSC are two different things.** You can stream classic SSR with `renderToPipeableStream` and no Server Components at all. RSC decides _what_ ships to the client; streaming decides _when_ the HTML arrives. Frameworks ship them together, so people mix them up.
+- **"Zero JS" has fine print.** Server Components add nothing to the bundle, but the RSC payload still travels to the browser, and every Client Component you render still ships its code. Put `"use client"` on a component high up in the tree, and everything it imports becomes client code too.
+- **Once the shell is flushed, the status code is already sent.** If you only find out a product doesn't exist inside a Suspense boundary, it's too late for a real 404. Do checks like "does this page exist" or "is this user allowed here" before the shell goes out.
+- **Too many boundaries feel jumpy.** Ten small sections popping in at different moments is bad UX in its own way, and it hurts CLS. Group related content under one boundary, and make fallbacks the same size as the real thing.
+
+### So Which One Should You Pick?
+
+| What you're building | What I'd reach for | Why |
+|----------------------|--------------------|-----|
+| Dashboard, internal tool, or B2B app behind a login | CSR | SEO doesn't matter, hosting is cheap, lots of client state |
+| Docs, marketing site, blog, legal pages | SSG (with ISR if content changes often) | Content is known ahead of time; best TTFB and SEO |
+| Storefront, job board, public profiles | SSR | Per-request data that has to be indexable and shareable |
+| Big content or commerce pages mixing fast and slow data | Streaming + RSC | The shell ships early and slow queries stop blocking the page |
+
+The bigger point is that **this is a per-route decision, not a per-app one.** One Next.js app can have a statically generated landing page, product pages that server-render and stream in reviews, and a settings area that's basically a client-side app. Decide route by route, based on who visits the page and what data it needs.
+
+## Delivery: The Boring Fixes That Win Big
+
+None of these need a code change, and they're often worth more than any refactor.
+
+### Step zero: put static assets on a CDN
+
+A CDN serves your JS, CSS, fonts, and images from somewhere close to the user. Someone in Mumbai shouldn't wait on a round trip to Virginia for every file. Vercel, Netlify, and Cloudflare Pages do this by default. If you self-host, put a CDN in front.
+
+### Step one: get your cache headers right
+
+Build tools put a content hash in bundle filenames (`main.a8f3c1.js`). Change the code and the filename changes, so those files can safely be cached for a year:
+
+```http
+# Hashed JS/CSS bundles: cache for a year, never revalidate
+Cache-Control: public, max-age=31536000, immutable
+
+# The HTML document: always check for a fresh version
+Cache-Control: no-cache
+```
+
+Check what your host actually sends. Some default to `max-age=0, must-revalidate` for everything, which makes the browser revalidate every bundle on every visit. Open the Network panel and look at the response headers. It takes a minute.
+
+### Turn on compression
+
+JavaScript, CSS, HTML, and JSON compress really well. Make sure Brotli or gzip is enabled on your server or CDN. For text, Brotli usually comes out smaller.
+
+```bash
+# Look for "content-encoding: br" or "content-encoding: gzip"
+curl -sI -H "Accept-Encoding: br, gzip" \
+  https://your-site.com/assets/main.js \
+  | grep -i content-encoding
+```
+
+## Bundle Size and Code Splitting
+
+A big bundle costs you twice. There's the download on the first visit, and then the parse, compile, and evaluate cost on _every_ visit, even when the file comes from cache. Caching saves the network trip. The CPU still has to chew through every byte.
+
+### Split out a vendor chunk
+
+```ts
+// vite.config.ts
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) return "vendor";
+        },
+      },
+    },
+  },
+});
+```
+
+You get two wins from this. Your app code changes on every deploy but React and your router don't, so with a separate vendor chunk a deploy only busts the cache for code that actually changed. Splitting vendor code out can also cut JavaScript compile time noticeably.
+
+### Look inside your bundles
+
+Don't guess what's big. Visualize it:
+
+```ts
+import { visualizer } from "rollup-plugin-visualizer";
+
+export default defineConfig({
+  plugins: [react(), visualizer({ open: true, gzipSize: true })],
+});
+```
+
+The treemap usually shows the problem within seconds: a whole icon library imported for three icons, two versions of the same package, or a charting library loaded on pages that never draw a chart.
+
+### Split by route, and lazy load secondary UI
+
+Someone landing on the homepage shouldn't download the settings page:
+
+```tsx
+import { lazy, Suspense } from "react";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Settings = lazy(() => import("./pages/Settings"));
+
+export function AppRoutes() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+    </Suspense>
+  );
+}
+```
+
+### Never lazy load the LCP element
+
+Code splitting backfires when you lazy load the wrong thing. Before you split anything, find the element that triggers LCP (the Performance panel labels it) and make sure the code that renders it lives in the main bundle.
+
+Sidebars, drawers, modals, and anything below the fold are fair game. Just give them placeholders that take up the same space:
+
+```tsx
+const FilterDrawer = lazy(() => import("./FilterDrawer"));
+
+function ProductPage() {
+  return (
+    <>
+      <ProductHero /> {/* LCP element: stays in the main bundle */}
+      <Suspense fallback={<DrawerPlaceholder />}>
+        <FilterDrawer />
+      </Suspense>
+    </>
+  );
+}
+```
+
+### Preload what users will open next
+
+Lazy loading moves the download cost to the next navigation. You can pay it early instead, in the background, once the current page is done:
+
+```tsx
+const loadSettings = () => import("./pages/Settings");
+const Settings = lazy(loadSettings);
+
+function Dashboard() {
+  useEffect(() => {
+    // Start the download after the first render, without blocking it
+    loadSettings();
+  }, []);
+
+  return <DashboardContent />;
+}
+```
+
+The module system caches dynamic imports, so when the user actually clicks Settings, `lazy` resolves instantly.
+
+## Data Fetching Without Waterfalls
+
+A fast bundle doesn't help much if the content is still waiting on data.
+
+### The `useEffect` waterfall
+
+```tsx
+function ProfilePage() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/user").then((r) => r.json()).then(setUser);
+  }, []);
+
+  if (!user) return <Spinner />;
+  return <Profile user={user} />;
+}
+```
+
+That request can't start until the bundle has downloaded, run, and mounted this component. Nest a few components that each fetch like this and you've built a waterfall, where every request waits for the one above it to finish and render.
+
+The simplest fix is to start fetching before React renders:
+
+```tsx
+// Starts as soon as this module is evaluated
+const userPromise = fetch("/api/user").then((r) => r.json());
+
+// Render this inside a Suspense boundary
+function ProfilePage() {
+  const user = use(userPromise);
+  return <Profile user={user} />;
+}
+```
+
+TanStack Query prefetching and React Router loaders are more complete versions of the same idea: start the request when the route is entered or the link is hovered, not when the component mounts.
+
+### Don't let one slow query hold the whole page
+
+The obvious way to fetch for SSR is to wait for everything:
+
+```tsx
+app.get("/dashboard", async (req, res) => {
+  const [user, stats, feed] = await Promise.all([
+    getUser(),
+    getStats(),
+    getFeed(), // takes 3 seconds
+  ]);
+  // Nothing has reached the browser for 3 seconds
+});
+```
+
+`await Promise.all` holds the entire HTML response until the _slowest_ query returns, and LCP waits right along with it. This is exactly the problem streaming solves: render the shell, put the slow part behind a Suspense boundary, and let it arrive when it's ready.
+
+| Approach | When content appears | Main risk |
+|----------|---------------------|-----------|
+| CSR + `useEffect` fetch | After JS loads, mounts, then fetches | Waterfalls and a long blank screen |
+| CSR + prefetch outside the tree | After JS loads, with data already in flight | Still tied to bundle size |
+| SSR + `await Promise.all` | After the slowest query finishes | One slow query blocks everything |
+| Streaming + RSC | Shell right away, the rest streams in | More moving parts to understand |
+
+## Interaction Performance
+
+A page can load fast and still feel sluggish. When clicks and typing feel laggy, the cause is almost always **long tasks on the main thread**. While JavaScript is running, the browser can't process input or paint.
+
+### How to investigate
+
+- **Profile in development mode.** Production builds minify function names, so the flame graph is full of `a` and `Qe`. In dev you see `SearchResults` and `filterProducts`. Dev timings are inflated, so find the culprit in dev and confirm the fix in a production build.
+- **Crank CPU throttling up to 20x.** Delays you barely notice on a laptop show up clearly as long tasks, the ones DevTools marks with red corners.
+
+### Break up long tasks
+
+Any synchronous work that runs over **50ms** is a long task, and long tasks are what hurt INP. For heavy non-React work like parsing, filtering big lists, or crunching numbers, hand control back to the browser every so often:
+
+```ts
+function yieldToMain(): Promise<void> {
+  const scheduler = (globalThis as any).scheduler;
+  if (scheduler?.yield) return scheduler.yield();
+  // Fallback for browsers without scheduler.yield()
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+async function processLargeList(items: Item[]) {
+  let lastYield = performance.now();
+
+  for (const item of items) {
+    processItem(item);
+
+    if (performance.now() - lastYield > 50) {
+      await yieldToMain(); // let the browser handle input and paint
+      lastYield = performance.now();
+    }
+  }
+}
+```
+
+`scheduler.yield()` is the modern API, and your code gets to continue ahead of other queued tasks. `setTimeout` works everywhere. `requestAnimationFrame` is handy when you want to run right before the next paint.
+
+### Find the re-renders
+
+There are two React DevTools features I use all the time:
+
+1. **"Highlight updates when components render"** in the Profiler settings. Type into a search box and watch. If the whole page flashes, you've found your problem.
+2. **Profiler flame graphs.** Record an interaction and you can see exactly which components rendered and how long each one took.
+
+### Move state down
+
+State near the root re-renders everything under it. Keep a search input's state in the layout and every keystroke re-renders the whole page:
+
+```tsx
+// ❌ Every keystroke re-renders Sidebar, Feed, and Footer
+function Layout() {
+  const [query, setQuery] = useState("");
+  return (
+    <>
+      <input value={query} onChange={(e) => setQuery(e.target.value)} />
+      <Sidebar />
+      <Feed />
+      <Footer />
+    </>
+  );
+}
+
+// ✅ Only SearchBox re-renders while typing
+function SearchBox() {
+  const [query, setQuery] = useState("");
+  return <input value={query} onChange={(e) => setQuery(e.target.value)} />;
+}
+
+function Layout() {
+  return (
+    <>
+      <SearchBox />
+      <Sidebar />
+      <Feed />
+      <Footer />
+    </>
+  );
+}
+```
+
+### Pass expensive UI as `children`
+
+When a component has to own some state _and_ wrap other content, take that content as `children`. Those elements are created by the parent, so a state change inside the wrapper doesn't re-render them:
+
+```tsx
+function ScrollTracker({ children }: { children: React.ReactNode }) {
+  const [scrollY, setScrollY] = useState(0);
+
+  return (
+    <div onScroll={(e) => setScrollY(e.currentTarget.scrollTop)}>
+      <ProgressBar value={scrollY} />
+      {children} {/* not re-rendered when scrollY changes */}
+    </div>
+  );
+}
+
+<ScrollTracker>
+  <ExpensiveArticle />
+</ScrollTracker>;
+```
+
+### Memoization and the React Compiler
+
+For expensive subtrees you can't restructure, `React.memo` with stable props from `useMemo` and `useCallback` still works. It's fragile, though. One unstable prop and the memo quietly does nothing.
+
+The **React Compiler** does that memoization for you at build time. In the book's experiments it removed somewhere between **40% and 80%** of unnecessary re-renders without any code changes.
+
+It won't fix everything. If state lives too high in the tree, everything below it still has to update, so moving state down is still your job. It also can't help with re-renders that come from third-party libraries published without compiler optimizations.
+
+## The Checklist
+
+**Measure**
+- [ ] RUM or CrUX data shows which pages and devices are actually slow
+- [ ] Profiling happens in a clean browser profile with network and CPU throttling
+
+**Render**
+- [ ] Rendering strategy chosen per route, based on audience and data
+- [ ] SSR pages use `hydrateRoot`, and client-only components wait for mount
+- [ ] Server data is serialized safely into the page for hydration
+- [ ] "Does this page exist" checks run before the streamed shell is flushed
+
+**Deliver**
+- [ ] Static assets served from a CDN
+- [ ] Hashed bundles cached with `max-age=31536000, immutable`
+- [ ] Brotli or gzip enabled
+
+**Split**
+- [ ] Vendor chunk separated from app code
+- [ ] Bundles audited with a visualizer
+- [ ] Routes and secondary UI lazy loaded, LCP element in the main bundle
+- [ ] Likely next routes preloaded in the background
+
+**Fetch**
+- [ ] No `useEffect` waterfalls on critical data
+- [ ] Slow server data streamed behind Suspense instead of blocking the HTML
+
+**Interact**
+- [ ] No main-thread tasks over 50ms during common interactions
+- [ ] State lives as low in the tree as it can
+- [ ] React Compiler or targeted memoization for heavy subtrees
+
+## If You Remember Nothing Else
+
+1. **Measure real users first**, then reproduce locally with throttling. You can only fix a bottleneck you've actually seen.
+2. **Rendering is a per-route trade-off.** CSR, SSR, SSG, and streaming each give something up, so pick based on who visits the page and what data it needs.
+3. **For load**, ship less JavaScript, faster, and get real HTML and data on screen early. **For interaction**, keep the main thread free.
+
+Pick your slowest page this week. Record one trace on a throttled profile, fix the single biggest bar in the flame graph, and then do it again.
