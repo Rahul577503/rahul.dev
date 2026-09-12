@@ -26,7 +26,7 @@ const config = {
     },
     extend: {
       fontFamily: {
-        serif: ["var(--font-newsreader)", "Georgia", "serif"],
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-ibm-plex-mono)", "monospace"],
       },
       colors: {

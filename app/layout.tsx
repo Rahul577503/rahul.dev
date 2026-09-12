@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
-import { Newsreader, IBM_Plex_Mono } from "next/font/google";
+import { Geist, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import Layout from "@/home-components/Layout.tsx/Layout";
 
-const newsreader = Newsreader({
+const geistSans = Geist({
   subsets: ["latin", "latin-ext"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
   display: "swap",
   preload: true,
-  variable: "--font-newsreader",
+  variable: "--font-geist-sans",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
@@ -108,7 +106,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
       <body
-        className={`${newsreader.variable} ${ibmPlexMono.variable} font-serif bg-background text-foreground antialiased min-h-screen`}
+        className={`${geistSans.variable} ${ibmPlexMono.variable} font-sans bg-background text-foreground antialiased min-h-screen`}
       >
         <ThemeProvider
           attribute="class"
